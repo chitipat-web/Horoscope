@@ -279,6 +279,40 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
 .fm-box .hint{margin-top:8px}
 .err{color:var(--danger);text-align:center;font-size:15px;margin-top:14px;line-height:1.7}
 
+/* ============ TILES & FEATURES ============ */
+.tilegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.tile{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:16px 12px;text-align:center;cursor:pointer;color:var(--ink);
+  font-family:inherit;font-size:14.5px;font-weight:600;
+  transition:transform .12s ease;box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.tile:active{transform:scale(.96)}
+.tile .em{display:block;font-size:30px;margin-bottom:6px}
+.tile .sub{display:block;font-size:11.5px;color:var(--dim);font-weight:400;margin-top:3px}
+.backrow{margin-top:14px}
+.colorrow{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:15px}
+.colorrow .cdot{width:26px;height:26px;border-radius:50%;border:2px solid #fff3;flex:none}
+.mutable{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.mutable th,.mutable td{border-bottom:1px solid rgba(255,255,255,.08);padding:8px 6px;text-align:left;color:var(--dim)}
+.mutable th{color:var(--gold);font-weight:600}
+.mutable tr.today td{color:var(--gold);font-weight:700}
+.daychips{margin-top:8px}
+.stickwrap{text-align:center;margin:16px 0 4px}
+.stick{display:inline-block;font-size:64px}
+.stick.shake{animation:shk .12s linear infinite}
+@keyframes shk{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
+.siamsi-no{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:42px;color:var(--gold);text-align:center;margin-top:10px;line-height:1.1}
+.lvchip{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:5px 14px;margin-top:8px}
+.lv-best{background:rgba(80,220,120,.15);color:#7ef0a8;border:1px solid rgba(80,220,120,.4)}
+.lv-good{background:rgba(240,201,106,.15);color:var(--gold);border:1px solid var(--line)}
+.lv-mid{background:rgba(255,255,255,.08);color:var(--dim);border:1px solid rgba(255,255,255,.15)}
+.lv-warn{background:rgba(255,120,120,.12);color:#ff9d9d;border:1px solid rgba(255,157,157,.4)}
+.sumbig{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:60px;color:var(--gold);text-align:center;line-height:1.1;margin-top:10px}
+.scorebig{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:72px;color:var(--gold);text-align:center;line-height:1.05;margin-top:8px}
+.namepair{text-align:center;font-size:16.5px;color:var(--ink);margin-top:4px;font-weight:600}
+.fld2{margin-top:10px}
+
 footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-height:1.7}
 
 /* ============ ความหมายไพ่ 22 ใบ ============ */
@@ -303,7 +337,7 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
 <div class="wrap">
   <header>
     <div class="brand">หมอมู AI</div>
-    <div class="tagline">เปิดไพ่ยิปซี วันละหนึ่งใบ ฟรี</div>
+    <div class="tagline">เปิดไพ่ · ทำนายฝัน · เซียมซี · เลขศาสตร์ · ดวงคู่ — ฟรี</div>
     <div class="daychip" id="daychip">🔮</div>
   </header>
 
@@ -323,11 +357,12 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
       <button class="btn" id="btnDraw">จั่วไพ่วันนี้ ✦</button>
     </div>
 
-    <div class="ritual">
-      <div class="label">ทำนายฝัน · ตีเลขจากฝัน 💤</div>
-      <textarea id="dreamText" maxlength="300" placeholder="เมื่อคืนฝันว่า… (เช่น ฝันเห็นงูใหญ่สีทองรัดแขน)"></textarea>
-      <div class="hint">เล่าฝันสั้นๆ หมอมูตีความตามตำราไทย พร้อมเลขนำโชค 2 ตัว และ 3 ตัว (วันละ 1 ฝัน)</div>
-      <button class="btn" id="btnDream">ทำนายฝัน ✨</button>
+    <div class="tilegrid">
+      <button class="tile" data-go="dream"><span class="em">💤</span>ทำนายฝัน<span class="sub">ตีเลขเด็ดจากฝัน</span></button>
+      <button class="tile" data-go="siamsi"><span class="em">🎋</span>เซียมซี<span class="sub">เขย่าติ้วเสี่ยงทาย</span></button>
+      <button class="tile" data-go="luck"><span class="em">📱</span>เลขศาสตร์<span class="sub">เบอร์มือถือ · ทะเบียนรถ</span></button>
+      <button class="tile" data-go="couple"><span class="em">💑</span>ดวงคู่รัก<span class="sub">เช็คความเข้ากัน</span></button>
+      <button class="tile" data-go="mu" style="grid-column:1/-1"><span class="em">🎨</span>มูรายวัน<span class="sub">สีเสื้อมงคลวันนี้ · ดวงตามวันเกิด</span></button>
     </div>
   </section>
 
@@ -387,7 +422,14 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
   <!-- ============ DREAM RESULT ============ -->
   <section class="screen" id="screen-dream">
     <img class="dreamart" src="./cards/18.jpg" alt="The Moon — ดวงจันทร์">
-    <div class="ritual">
+    <div class="ritual" id="dreamFormBox">
+      <div class="label">ทำนายฝัน · ตีเลขจากฝัน 💤</div>
+      <textarea id="dreamText" maxlength="300" placeholder="เมื่อคืนฝันว่า… (เช่น ฝันเห็นงูใหญ่สีทองรัดแขน)"></textarea>
+      <div class="hint">เล่าฝันสั้นๆ หมอมูตีความตามตำราไทย พร้อมเลขนำโชค 2 ตัว และ 3 ตัว (วันละ 1 ฝัน)</div>
+      <button class="btn" id="btnDream">ทำนายฝัน ✨</button>
+      <button class="btn ghost" data-back>กลับหน้าหลัก</button>
+    </div>
+    <div class="ritual" id="dreamResBox" style="display:none">
       <div id="dreamLoading">
         <div class="gaze">หมอมูกำลังเปิดตำราฝัน… 💤</div>
         <div class="skel" style="width:92%"></div>
@@ -412,6 +454,98 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
         <button class="btn ghost" id="btnDreamBack2">กลับหน้าหลัก</button>
       </div>
     </div>
+  </section>
+
+  <!-- ============ มูรายวัน ============ -->
+  <section class="screen" id="screen-mu">
+    <div class="ritual">
+      <div class="label">🎨 สีเสื้อมงคลวันนี้ · <span id="muToday"></span></div>
+      <div id="muColors"></div>
+      <details style="margin-top:14px">
+        <summary style="cursor:pointer;color:var(--gold);font-size:14px;font-weight:600">ดูตารางสีครบทั้ง 7 วัน</summary>
+        <div style="overflow-x:auto"><table class="mutable" id="muTable"></table></div>
+      </details>
+      <div class="hint" style="margin-top:10px">อิงตำราสวัสดิรักษา — แต่ละตำราอาจต่างกันเล็กน้อย</div>
+    </div>
+    <div class="ritual">
+      <div class="label">📅 ดวงวันนี้ตามวันเกิดของคุณ</div>
+      <div class="chips daychips" id="bdayChips" role="group" aria-label="เลือกวันเกิด"></div>
+      <button class="btn" id="btnBday">ดูดวงของฉันวันนี้ ✦</button>
+      <div id="bdayLoading" style="display:none;margin-top:8px">
+        <div class="gaze">หมอมูกำลังเพ่งญาณ… 🔮</div>
+        <div class="skel" style="width:92%"></div><div class="skel" style="width:78%"></div>
+      </div>
+      <div id="bdayResult" style="display:none">
+        <div class="keyword" id="bKeyword"></div>
+        <p class="reading" id="bReading"></p>
+        <div class="advice" id="bAdvice"></div>
+        <div class="lucky">
+          <div class="box"><div class="swatch" id="bSwatch"></div><div><div class="t">สีมงคลของคุณวันนี้</div><div class="v" id="bColor"></div></div></div>
+          <div class="box"><div style="font-size:26px">🔢</div><div><div class="t">เลขนำโชค</div><div class="v" id="bNumbers"></div></div></div>
+        </div>
+      </div>
+      <div id="bdayErr" class="err" style="display:none"></div>
+    </div>
+    <button class="btn ghost backrow" data-back>กลับหน้าหลัก</button>
+  </section>
+
+  <!-- ============ เซียมซี ============ -->
+  <section class="screen" id="screen-siamsi">
+    <div class="ritual" style="text-align:center">
+      <div class="label">🎋 เซียมซีหมอมู</div>
+      <div class="hint">ตั้งจิตนิ่งๆ ถามเรื่องในใจ แล้วกดเขย่าติ้ว</div>
+      <div class="stickwrap"><span class="stick" id="stick">🎋</span></div>
+      <button class="btn" id="btnShake">เขย่าติ้ว 🙏</button>
+      <div id="siamsiResult" style="display:none">
+        <div class="siamsi-no" id="ssNo"></div>
+        <div style="text-align:center"><span class="lvchip" id="ssLv"></span></div>
+        <p class="reading" id="ssText" style="text-align:center"></p>
+        <div style="text-align:center;margin-top:10px"><span class="numchip" id="ssN1"></span><span class="numchip" id="ssN2"></span></div>
+      </div>
+    </div>
+    <button class="btn ghost backrow" data-back>กลับหน้าหลัก</button>
+  </section>
+
+  <!-- ============ เลขศาสตร์ ============ -->
+  <section class="screen" id="screen-lucknum">
+    <div class="ritual">
+      <div class="label">📱 เลขศาสตร์ เบอร์มือถือ / ทะเบียนรถ</div>
+      <input id="lnInput" inputmode="text" maxlength="14" placeholder="เช่น 0812345678 หรือ 1กข1234" autocomplete="off">
+      <div class="hint">กรอกเบอร์โทรหรือเลขทะเบียนรถ ระบบนับเฉพาะตัวเลขมารวมกันตามหลักเลขศาสตร์</div>
+      <button class="btn" id="btnLuck">วิเคราะห์เลข ✦</button>
+      <div id="lnResult" style="display:none">
+        <div class="sumbig" id="lnSum"></div>
+        <div style="text-align:center"><span class="lvchip" id="lnLv"></span></div>
+        <p class="reading" id="lnText" style="text-align:center"></p>
+        <div class="hint" style="text-align:center;margin-top:8px">เพื่อความบันเทิง — เลขไม่ได้กำหนดชีวิต ความพยายามต่างหาก ✨</div>
+      </div>
+    </div>
+    <button class="btn ghost backrow" data-back>กลับหน้าหลัก</button>
+  </section>
+
+  <!-- ============ ดวงคู่รัก ============ -->
+  <section class="screen" id="screen-couple">
+    <div class="ritual">
+      <div class="label">💑 เช็คความเข้ากันของคู่รัก</div>
+      <input id="cpName1" maxlength="20" placeholder="ชื่อเล่นของคุณ" autocomplete="off">
+      <input id="cpName2" maxlength="20" class="fld2" placeholder="ชื่อเล่นของเขา/เธอ" autocomplete="off">
+      <div class="hint">หมอมูวิเคราะห์จากพลังของชื่อทั้งสอง ตามศาสตร์ตัวอักษรและเลขศาสตร์ชื่อ</div>
+      <button class="btn" id="btnCouple">เช็คความเข้ากัน 💘</button>
+      <div id="cpLoading" style="display:none;margin-top:8px">
+        <div class="gaze">หมอมูกำลังจับคู่พลังชื่อ… 💞</div>
+        <div class="skel" style="width:92%"></div><div class="skel" style="width:78%"></div>
+      </div>
+      <div id="cpResult" style="display:none">
+        <div class="namepair" id="cpPair"></div>
+        <div class="scorebig" id="cpScore"></div>
+        <div class="keyword" id="cpKeyword" style="font-size:28px"></div>
+        <p class="reading" id="cpReading"></p>
+        <div class="advice" id="cpAdvice"></div>
+        <button class="btn" id="btnCoupleShare">แชร์ผลคู่เรา 📤</button>
+      </div>
+      <div id="cpErr" class="err" style="display:none"></div>
+    </div>
+    <button class="btn ghost backrow" data-back>กลับหน้าหลัก</button>
   </section>
 
   <!-- ============ ความหมายไพ่ (SEO + อ่านประกอบ) ============ -->
@@ -683,12 +817,19 @@ function init(){
 
   $('btnMore').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
   $('btnDream').addEventListener('click', startDream);
+  document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click', ()=>openFeature(t.dataset.go)));
+  document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); }));
+  $('btnShake').addEventListener('click', shakeSiamsi);
+  $('btnLuck').addEventListener('click', analyzeLuck);
+  $('btnBday').addEventListener('click', startBday);
+  $('btnCouple').addEventListener('click', startCouple);
+  $('btnCoupleShare').addEventListener('click', shareCouple);
+  buildBdayChips();
   $('btnDreamShare').addEventListener('click', shareDream);
   $('btnDreamBack').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
   $('btnDreamBack2').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
   $('btnDreamRetry').addEventListener('click', retryDream);
-  const dsaved = loadDreamSaved();
-  if (dsaved){ $('dreamText').value = dsaved.dream; $('btnDream').textContent = 'ดูคำทำนายฝันวันนี้ 💤'; }
+
   $('btnUnlockClose').addEventListener('click', ()=>$('unlockModal').classList.remove('on'));
   $('btnUnlockShare').addEventListener('click', async ()=>{
     $('unlockModal').classList.remove('on');
@@ -774,19 +915,28 @@ function loadDreamSaved(){
 function saveDream(){
   try{ localStorage.setItem(LS_DREAM, JSON.stringify({date: todayStr(), dream: dreamCur, result: dreamRes})); }catch(e){}
 }
-function startDream(){
+function openDream(){
+  showScreen('screen-dream');
   const saved = loadDreamSaved();
   if (saved){
     dreamCur = saved.dream; dreamRes = saved.result;
-    showScreen('screen-dream');
+    $('dreamFormBox').style.display='none';
+    $('dreamResBox').style.display='block';
     $('dreamLoading').style.display='none'; $('dreamErr').style.display='none';
     renderDream();
-    return;
+  } else {
+    $('dreamFormBox').style.display='block';
+    $('dreamResBox').style.display='none';
   }
+}
+function startDream(){
+  const saved = loadDreamSaved();
+  if (saved){ openDream(); return; }
   const text = $('dreamText').value.trim().slice(0,300);
   if (!text){ $('dreamText').focus(); return; }
   dreamCur = text;
-  showScreen('screen-dream');
+  $('dreamFormBox').style.display='none';
+  $('dreamResBox').style.display='block';
   $('dreamLoading').style.display='block';
   $('dreamResult').style.display='none';
   $('dreamErr').style.display='none';
@@ -1223,6 +1373,264 @@ async function shareCard(){
     }
   }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
   btn.disabled = false; btn.textContent = 'แชร์การ์ดดวง 📤';
+}
+
+/* ================= FEATURES: มูรายวัน / เซียมซี / เลขศาสตร์ / ดวงคู่ ================= */
+function openFeature(go){
+  if (go === 'dream') return openDream();
+  if (go === 'siamsi') return showScreen('screen-siamsi');
+  if (go === 'luck') return showScreen('screen-lucknum');
+  if (go === 'couple') return showScreen('screen-couple');
+  if (go === 'mu') return openMu();
+}
+
+/* ---------- มูรายวัน: สีเสื้อมงคล (ตำราสวัสดิรักษา) ---------- */
+const MU_COLORS = {
+  'อาทิตย์':   {lucky:[['แดง','#d23c3c'],['เขียว','#3ba55d']], money:[['เขียว','#3ba55d']], avoid:[['ฟ้า/น้ำเงิน','#3b7dd8']]},
+  'จันทร์':    {lucky:[['เหลืองนวล','#f0d060'],['ขาว','#f2f2f2']], money:[['เขียว','#3ba55d']], avoid:[['แดง','#d23c3c']]},
+  'อังคาร':    {lucky:[['ชมพู','#f06292']], money:[['ดำ/ม่วงเข้ม','#5e4b8b']], avoid:[['ขาว/เหลืองนวล','#f5f0d8']]},
+  'พุธ':       {lucky:[['เขียว','#3ba55d']], money:[['เหลือง','#f0c96a']], avoid:[['ชมพู','#f06292']]},
+  'พฤหัสบดี':  {lucky:[['ส้ม/แสด','#f08a3c']], money:[['ฟ้า/น้ำเงิน','#3b7dd8']], avoid:[['ดำ/ม่วงเข้ม','#5e4b8b']]},
+  'ศุกร์':     {lucky:[['ฟ้า/น้ำเงิน','#3b7dd8']], money:[['ชมพู','#f06292']], avoid:[['เทาเข้ม/ดำ','#555a63']]},
+  'เสาร์':     {lucky:[['ดำ/ม่วงเข้ม','#5e4b8b']], money:[['แดง','#d23c3c']], avoid:[['เขียว','#3ba55d']]},
+};
+function openMu(){
+  showScreen('screen-mu');
+  const today = THAI_DAYS[new Date().getDay()];
+  $('muToday').textContent = 'วัน' + today;
+  const c = MU_COLORS[today];
+  const row = (label, arr) => '<div class="colorrow">' +
+    arr.map(a=>'<span class="cdot" style="background:'+a[1]+'"></span>').join('') +
+    '<span><b style="color:var(--gold)">'+label+':</b> ' + arr.map(a=>a[0]).join(', ') + '</span></div>';
+  $('muColors').innerHTML =
+    row('✅ เสริมดวง/บารมี', c.lucky) + row('💰 เสริมโชคลาภ', c.money) + row('⛔ กาลกิณี ห้ามใส่', c.avoid);
+  $('muTable').innerHTML = '<tr><th>วัน</th><th>เสริมดวง</th><th>โชคลาภ</th><th>ห้ามใส่</th></tr>' +
+    THAI_DAYS.map(d=>{
+      const x = MU_COLORS[d];
+      return '<tr'+(d===today?' class="today"':'')+'><td>'+d+'</td><td>'+x.lucky.map(a=>a[0]).join(', ')+'</td><td>'+x.money.map(a=>a[0]).join(', ')+'</td><td>'+x.avoid.map(a=>a[0]).join(', ')+'</td></tr>';
+    }).join('');
+}
+
+/* ---------- ดวงวันเกิด (AI) ---------- */
+const LS_BDAY = 'mm_bday';
+let bdayPick = '';
+function buildBdayChips(){
+  try{ bdayPick = localStorage.getItem('mm_bdayday') || ''; }catch(e){}
+  const box = $('bdayChips');
+  box.innerHTML = THAI_DAYS.map(d=>'<button class="chip" data-d="'+d+'" aria-pressed="'+(d===bdayPick)+'">'+d+'</button>').join('');
+  box.addEventListener('click', ev=>{
+    const b = ev.target.closest('.chip'); if(!b) return;
+    box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    bdayPick = b.dataset.d;
+    try{ localStorage.setItem('mm_bdayday', bdayPick); }catch(e){}
+  });
+}
+function startBday(){
+  if (!bdayPick){ $('bdayErr').style.display='block'; $('bdayErr').textContent='เลือกวันเกิดของคุณก่อนนะ'; return; }
+  // แคชวันละครั้งต่อวันเกิด
+  try{
+    const j = JSON.parse(localStorage.getItem(LS_BDAY)||'null');
+    if (j && j.date === todayStr() && j.day === bdayPick && j.result){ renderBday(j.result); return; }
+  }catch(e){}
+  $('bdayErr').style.display='none';
+  $('bdayResult').style.display='none';
+  $('bdayLoading').style.display='block';
+  fetch(CONFIG.WORKER_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ mode:'birthday', day: bdayPick }),
+  }).then(r=>r.json().then(j=>({ok:r.ok, j}))).then(({ok, j})=>{
+    if (!ok || !j.ok) throw (j.error || 'network');
+    try{ localStorage.setItem(LS_BDAY, JSON.stringify({date: todayStr(), day: bdayPick, result: j.data})); }catch(e){}
+    renderBday(j.data);
+  }).catch(err=>{
+    $('bdayLoading').style.display='none';
+    $('bdayErr').style.display='block';
+    $('bdayErr').textContent = err === 'busy' ? 'คิวแน่นมาก รอสักครู่แล้วลองใหม่ 🙏' : 'ญาณขัดข้องชั่วคราว ลองใหม่อีกครั้ง 🌫️';
+  });
+}
+function renderBday(d){
+  $('bdayLoading').style.display='none';
+  $('bdayErr').style.display='none';
+  $('bdayResult').style.display='block';
+  $('bKeyword').textContent = '“' + (d.keyword||'ดวงกำลังเดิน') + '”';
+  $('bReading').textContent = d.reading || '';
+  $('bAdvice').innerHTML = '<b>🪄 เคล็ดของคนเกิดวัน' + bdayPick + ':</b> ' + escapeHtml(d.advice||'');
+  const col = d.color || {name:'ทองอำพัน', hex:'#f0c96a'};
+  $('bSwatch').style.background = col.hex || '#f0c96a';
+  $('bColor').textContent = col.name || 'ทองอำพัน';
+  const nums = Array.isArray(d.numbers) ? d.numbers.slice(0,2) : [7,24];
+  $('bNumbers').innerHTML = nums.map(n=>'<span class="numchip">'+String(n)+'</span>').join('');
+}
+
+/* ---------- เซียมซี 28 ใบ ---------- */
+const SIAMSI = [
+  {lv:'ดีมาก', t:'เรือถึงฝั่งลมส่งท้าย สิ่งที่หวังไว้จะสำเร็จเร็วกว่าคิด ผู้ใหญ่เมตตาเกื้อหนุนเต็มที่', n:['8','289']},
+  {lv:'ดี', t:'เมฆเริ่มจาง ตะวันใกล้โผล่ อดทนอีกนิดเดียว ข่าวดีที่รอจะมาถึงในไม่ช้า', n:['16','516']},
+  {lv:'กลางๆ', t:'น้ำนิ่งไหลลึก ช่วงนี้อย่าเพิ่งรีบตัดสินใจใหญ่ ตั้งหลักให้มั่นแล้วโอกาสจะชัดเอง', n:['20','420']},
+  {lv:'ดีมาก', t:'ฝนตกต้องตามฤดู การงานการเงินเข้าจังหวะ ลงมือสิ่งใดตอนนี้ผลจะงอกงาม', n:['45','645']},
+  {lv:'พึงระวัง', t:'เดินทางไกลระวังสะดุด อย่าไว้ใจคำหวานเกินไป เช็คสัญญาและตัวเลขให้ถี่ถ้วนก่อนเซ็น', n:['31','731']},
+  {lv:'ดี', t:'ดอกบัวพ้นน้ำ ความพยายามที่ผ่านมาเริ่มออกดอก คนที่เคยมองข้ามจะกลับมาเห็นค่า', n:['52','852']},
+  {lv:'กลางๆ', t:'ลมเปลี่ยนทิศบ่อย ใจอย่าไหวตาม ยึดแผนเดิมไว้ก่อนแล้วครึ่งเดือนหน้าจะคลี่คลาย', n:['27','627']},
+  {lv:'ดีมาก', t:'ช้างเผือกเข้าบ้าน ผู้อุปถัมภ์คนสำคัญกำลังจะเข้ามา เปิดใจรับคำแนะนำแล้วชีวิตจะก้าวกระโดด', n:['91','191']},
+  {lv:'ดี', t:'ปลูกไม้ใกล้ออกผล เรื่องเงินมีเกณฑ์รับก้อนเล็กๆ ต่อเนื่อง เก็บออมไว้จะกลายเป็นก้อนใหญ่', n:['64','264']},
+  {lv:'พึงระวัง', t:'ไฟใกล้ฟาง อารมณ์ร้อนคือศัตรูของเดือนนี้ นิ่งไว้หนึ่งคืนก่อนตอบทุกเรื่องสำคัญ', n:['13','413']},
+  {lv:'ดี', t:'สะพานทอดข้ามน้ำ คนกลางหรือเพื่อนเก่าจะพาโอกาสใหม่มาให้ อย่าปฏิเสธนัดพบช่วงนี้', n:['58','958']},
+  {lv:'กลางๆ', t:'พระจันทร์ครึ่งดวง ได้อย่างเสียอย่างเป็นธรรมดา เลือกสิ่งที่ใจสงบแล้วจะไม่เสียใจ', n:['24','124']},
+  {lv:'ดีมาก', t:'มังกรได้น้ำ อำนาจวาสนากำลังหนุน งานที่ขอไว้หรือตำแหน่งที่หวังมีเกณฑ์สมปรารถนา', n:['89','989']},
+  {lv:'ดี', t:'นกน้อยได้รัง เรื่องบ้าน ที่อยู่ หรือครอบครัวจะลงตัวขึ้น เหมาะจัดบ้านรับโชค', n:['36','736']},
+  {lv:'พึงระวัง', t:'หมอกบังทาง อย่าเพิ่งเชื่อข่าวลือหรือตัวเลขที่ยังไม่เห็นกับตา รอความชัดเจนก่อนลงเงิน', n:['17','317']},
+  {lv:'ดี', t:'ผึ้งพบดอกไม้ เสน่ห์กำลังเปล่ง คนโสดมีเกณฑ์เจอคนถูกใจในงานสังสรรค์หรือที่เรียนที่ทำงาน', n:['56','256']},
+  {lv:'กลางๆ', t:'เกวียนล้อเก่า ยังไปถึงจุดหมายได้แต่ช้าหน่อย ซ่อมเสริมทักษะตัวเองตอนนี้คือการลงทุนที่คุ้มสุด', n:['42','542']},
+  {lv:'ดีมาก', t:'ฝนทองโปรยปราย ลาภลอยเข้ามาแบบไม่ทันตั้งตัว แบ่งทำบุญสักหน่อยโชคจะวนกลับมาอีก', n:['65','465']},
+  {lv:'ดี', t:'เต่าใหญ่อายุยืน สุขภาพที่กังวลจะดีขึ้น ผู้ใหญ่ในบ้านแข็งแรง ดูแลกันไว้ให้อบอุ่น', n:['70','970']},
+  {lv:'พึงระวัง', t:'คลื่นซัดหิน คำพูดคนใกล้ตัวอาจกระทบใจ อย่าเก็บมาแบก ให้เวลาพิสูจน์ความจริงใจ', n:['21','621']},
+  {lv:'ดี', t:'ม้าเร็วถึงเมือง การเดินทาง ติดต่อ หรือย้ายงานราบรื่น จังหวะนี้กล้าขยับได้เลย', n:['47','747']},
+  {lv:'กลางๆ', t:'ต้นกล้ารอฝน ทุกอย่างพร้อมแล้วขาดแค่จังหวะ อย่าใจร้อนถอนกล้าก่อนถึงฤดู', n:['33','833']},
+  {lv:'ดีมาก', t:'แก้วแหวนเต็มพาน ความรักและการเงินหนุนกันเอง คนมีคู่มีเกณฑ์ข่าวดี คนโสดเนื้อคู่ใกล้เข้ามา', n:['95','595']},
+  {lv:'ดี', t:'พระพายพัดเบา อุปสรรคที่กลัวจะเบากว่าที่คิดมาก ทำใจให้สบายแล้วเดินหน้าตามแผน', n:['29','929']},
+  {lv:'พึงระวัง', t:'เงาในน้ำ อย่าตัดสินอะไรจากภาพลักษณ์ ทรัพย์สินให้เก็บให้ดี ระวังของหายช่วงนี้', n:['38','038']},
+  {lv:'ดี', t:'ระฆังดังกังวาน ชื่อเสียงกำลังมา ผลงานที่ทำเงียบๆ จะถูกพูดถึงในทางที่ดี', n:['61','161']},
+  {lv:'กลางๆ', t:'สองแพร่งกลางป่า ทางไหนก็ไปถึงได้ ต่างแค่ความเร็ว เลือกทางที่ตัวเองคุมได้มากกว่า', n:['50','250']},
+  {lv:'ดีมาก', t:'ดาวเหนือนำทาง สิ่งศักดิ์สิทธิ์ที่นับถือคุ้มครองอยู่ ขอพรเรื่องใดให้ตั้งใจทำควบคู่ แล้วจะสมหวัง', n:['9','109']},
+];
+const LV_CLASS = {'ดีมาก':'lv-best','ดี':'lv-good','กลางๆ':'lv-mid','พึงระวัง':'lv-warn'};
+let shaking = false;
+function shakeSiamsi(){
+  if (shaking) return;
+  shaking = true;
+  $('siamsiResult').style.display='none';
+  const st = $('stick');
+  st.classList.add('shake');
+  setTimeout(()=>{
+    st.classList.remove('shake');
+    const i = Math.floor(Math.random()*SIAMSI.length);
+    const s = SIAMSI[i];
+    $('ssNo').textContent = 'ใบที่ ' + (i+1);
+    $('ssLv').textContent = s.lv;
+    $('ssLv').className = 'lvchip ' + (LV_CLASS[s.lv]||'lv-mid');
+    $('ssText').textContent = s.t;
+    $('ssN1').textContent = s.n[0];
+    $('ssN2').textContent = s.n[1];
+    $('siamsiResult').style.display='block';
+    shaking = false;
+  }, 1400);
+}
+
+/* ---------- เลขศาสตร์ ---------- */
+const LN_BEST = {24:'เลขมหาเศรษฐี ดึงดูดเงินทองเข้าหา',36:'เมตตามหานิยม ผู้ใหญ่รักใคร่เอ็นดู',41:'ดาวคุ้มครอง การงานมั่นคงก้าวหน้า',42:'เจ้าสัวน้อย เงินเข้าไม่ขาดสาย',45:'ปัญญาเฉียบแหลม เจรจาเก่งได้ทรัพย์',46:'เศรษฐีใหม่ พลิกฐานะได้ด้วยตัวเอง',50:'คนเมตตา ค้าขายเจรจาราบรื่น',51:'ผู้นำที่มาพร้อมโชค บริวารหนุน',54:'ราชาโชค จับอะไรก็เป็นเงินเป็นทอง',55:'ผู้ใหญ่เอ็นดู อุปถัมภ์ค้ำชูตลอด',56:'เสน่ห์แรง มีโชคเรื่องผู้คนและความรัก',59:'เสน่ห์ค้าขาย ลูกค้าติดใจไม่หนีไปไหน',63:'เจรจาเป็นทรัพย์ พูดสิ่งใดคนเชื่อถือ',64:'พลิกวิกฤตเป็นโอกาสได้เสมอ',65:'มหาโชคมหาลาภ เกณฑ์รับทรัพย์ก้อนใหญ่'};
+const LN_GOOD = [9,14,15,19,23,32,40,44,49,53,58,61,68,72];
+const LN_WARN = [12,13,17,18,21,22,26,27,29,34,35,38,43,48,52,57,62,66,71,74,76,78];
+function analyzeLuck(){
+  const raw = $('lnInput').value;
+  const digits = (raw.match(/[0-9]/g)||[]);
+  if (digits.length < 2){ $('lnInput').focus(); return; }
+  const sum = digits.reduce((a,b)=>a+parseInt(b,10),0);
+  let lv, cls, text;
+  if (LN_BEST[sum]){ lv='ดีเยี่ยม'; cls='lv-best'; text='ผลรวม '+sum+' — '+LN_BEST[sum]+' ถือเป็นกลุ่มเลขมงคลระดับท็อปของเลขศาสตร์ ใครถือเลขนี้ให้ใช้จังหวะดีนี้เดินหน้าเรื่องงานและเงินเต็มที่'; }
+  else if (LN_GOOD.includes(sum)){ lv='ดี'; cls='lv-good'; text='ผลรวม '+sum+' จัดอยู่ในกลุ่มเลขดี พลังส่งเสริมเรื่องความราบรื่นและคนช่วยเหลือ ตั้งใจทำสิ่งใดมักมีแรงหนุนจากคนรอบข้าง'; }
+  else if (LN_WARN.includes(sum)){ lv='พึงระวัง'; cls='lv-warn'; text='ผลรวม '+sum+' ตามตำราจัดเป็นเลขที่ต้องใช้ความระมัดระวัง เหนื่อยหน่อยแต่ไม่ได้แปลว่าไม่ดี — ใช้สติกับความรอบคอบนำ แล้วเปลี่ยนแรงเสียดทานเป็นแรงผลัก (สายมูบางคนเลือกเปลี่ยนเบอร์ให้ผลรวมอยู่กลุ่มมงคล)'; }
+  else { lv='กลางๆ'; cls='lv-mid'; text='ผลรวม '+sum+' เป็นกลุ่มเลขกลางๆ ไม่หนุนแรงแต่ก็ไม่ฉุด ชีวิตขึ้นกับมือเราเป็นหลัก ใส่ความขยันลงไปเลขไหนก็ปัง'; }
+  $('lnSum').textContent = sum;
+  $('lnLv').textContent = lv;
+  $('lnLv').className = 'lvchip ' + cls;
+  $('lnText').textContent = text;
+  $('lnResult').style.display='block';
+}
+
+/* ---------- ดวงคู่รัก (AI) ---------- */
+let cpData = null;
+function startCouple(){
+  const n1 = $('cpName1').value.trim().slice(0,20);
+  const n2 = $('cpName2').value.trim().slice(0,20);
+  if (!n1){ $('cpName1').focus(); return; }
+  if (!n2){ $('cpName2').focus(); return; }
+  $('cpErr').style.display='none';
+  $('cpResult').style.display='none';
+  $('cpLoading').style.display='block';
+  fetch(CONFIG.WORKER_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ mode:'love', name1:n1, name2:n2 }),
+  }).then(r=>r.json().then(j=>({ok:r.ok, j}))).then(({ok, j})=>{
+    if (!ok || !j.ok) throw (j.error || 'network');
+    cpData = { n1, n2, ...j.data };
+    $('cpLoading').style.display='none';
+    $('cpResult').style.display='block';
+    $('cpPair').textContent = n1 + ' 💞 ' + n2;
+    $('cpScore').textContent = (cpData.score||75) + '%';
+    $('cpKeyword').textContent = '“' + (cpData.keyword||'คู่ที่เติมเต็มกัน') + '”';
+    $('cpReading').textContent = cpData.reading || '';
+    $('cpAdvice').innerHTML = '<b>🪄 เคล็ดเสริมรักของคู่นี้:</b> ' + escapeHtml(cpData.advice||'');
+  }).catch(err=>{
+    $('cpLoading').style.display='none';
+    $('cpErr').style.display='block';
+    $('cpErr').textContent = err === 'busy' ? 'คิวแน่นมาก รอสักครู่แล้วลองใหม่ 🙏' : 'ญาณขัดข้องชั่วคราว ลองใหม่อีกครั้ง 🌫️';
+  });
+}
+async function shareCouple(){
+  if (!cpData) return;
+  const btn = $('btnCoupleShare');
+  btn.disabled = true; btn.textContent = 'กำลังปั้นการ์ด…';
+  try{
+    try{ await document.fonts.load('700 70px Srisakdi'); await document.fonts.load('700 44px Sarabun'); await document.fonts.ready; }catch(e){}
+    const cv = $('cv'); const x = cv.getContext('2d');
+    const W=1080, H=1920;
+    const g = x.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1458'); g.addColorStop(.55,'#140a30'); g.addColorStop(1,'#0b0620');
+    x.fillStyle = g; x.fillRect(0,0,W,H);
+    for(let i=0;i<130;i++){
+      x.globalAlpha = Math.random()*0.7+0.15; x.fillStyle = '#fff';
+      x.beginPath(); x.arc(Math.random()*W, Math.random()*H, Math.random()*2.2+0.6, 0, 7); x.fill();
+    }
+    x.globalAlpha = 1;
+    x.textAlign='center'; x.textBaseline='alphabetic';
+    x.fillStyle = '#f0c96a';
+    x.font = "700 64px Srisakdi, Sarabun, serif";
+    x.fillText(CONFIG.APP_NAME + ' 🔮', W/2, 150);
+    x.fillStyle = '#b9aed6';
+    x.font = "500 34px Sarabun, sans-serif";
+    x.fillText('ดวงความเข้ากันของคู่รัก 💑', W/2, 210);
+
+    // ไพ่ The Lovers
+    const cw=340, ch=590, cx=(W-cw)/2, cy=250;
+    rrect(x, cx-8, cy-8, cw+16, ch+16, 30); x.fillStyle='#c8973f'; x.fill();
+    rrect(x, cx-2, cy-2, cw+4, ch+4, 26); x.fillStyle='#fdf8ea'; x.fill();
+    let art = null;
+    try{ art = await loadImage(cardImg(6)); }catch(e){}
+    x.save(); rrect(x, cx, cy, cw, ch, 22); x.clip();
+    if (art){ const r = Math.max(cw/art.width, ch/art.height); x.drawImage(art, cx+cw/2-art.width*r/2, cy+ch/2-art.height*r/2, art.width*r, art.height*r); }
+    else { x.fillStyle='#efe3c2'; x.fillRect(cx,cy,cw,ch); }
+    x.restore();
+
+    x.fillStyle = '#f1eafe';
+    x.font = "700 52px Sarabun, sans-serif";
+    x.fillText(cpData.n1 + '  💞  ' + cpData.n2, W/2, cy+ch+90);
+    x.fillStyle = '#f0c96a';
+    x.font = "700 150px Srisakdi, Sarabun, serif";
+    x.fillText((cpData.score||75) + '%', W/2, cy+ch+250);
+    x.font = "700 56px Srisakdi, Sarabun, serif";
+    x.fillText('“' + (cpData.keyword||'คู่ที่เติมเต็มกัน') + '”', W/2, cy+ch+335);
+    x.fillStyle = '#f1eafe';
+    x.font = "400 36px Sarabun, sans-serif";
+    const lines = wrapThai(x, cpData.reading||'', 880, 3);
+    let ty = cy+ch+400;
+    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 54; });
+    x.fillStyle = '#8f82b8';
+    x.font = "500 32px Sarabun, sans-serif";
+    x.fillText('เช็คดวงคู่ของคุณฟรีที่ ' + CONFIG.APP_URL + ' ✨', W/2, 1840);
+
+    const blob = await new Promise(r=>cv.toBlob(r,'image/png'));
+    const file = new File([blob], 'mormoo-couple.png', {type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'ดวงคู่เรา 💞'});
+      markShared();
+    } else {
+      $('shareImg').src = URL.createObjectURL(blob);
+      $('shareModal').classList.add('on');
+      markShared();
+    }
+  }catch(e){}
+  btn.disabled = false; btn.textContent = 'แชร์ผลคู่เรา 📤';
 }
 
 /* ================= FRIEND CARD (ส่งไพ่ให้เพื่อน) ================= */
