@@ -312,6 +312,18 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
 .scorebig{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:72px;color:var(--gold);text-align:center;line-height:1.05;margin-top:8px}
 .namepair{text-align:center;font-size:16.5px;color:var(--ink);margin-top:4px;font-weight:600}
 .fld2{margin-top:10px}
+#dobInput{
+  width:100%;margin-top:10px;font-family:inherit;font-size:16px;color:var(--ink);
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:14px;min-height:52px;outline:none;
+  color-scheme:dark;
+}
+#dobInput:focus{border-color:var(--gold)}
+.profcard{
+  border:1px dashed var(--line);border-radius:14px;background:rgba(240,201,106,.07);
+  padding:14px;text-align:center;font-size:16.5px;font-weight:600;color:var(--gold);line-height:1.9;
+}
+.profcard small{display:block;font-weight:400;font-size:12.5px;color:var(--dim)}
 
 footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-height:1.7}
 
@@ -467,6 +479,19 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
       </details>
       <div class="hint" style="margin-top:10px">อิงตำราสวัสดิรักษา — แต่ละตำราอาจต่างกันเล็กน้อย</div>
     </div>
+    <div class="ritual">
+      <div class="label">🌟 ดวงประจำตัวของฉัน</div>
+      <div id="profView" style="display:none">
+        <div class="profcard" id="profText"></div>
+        <button class="btn ghost" id="btnProfEdit">แก้ไขวันเกิด</button>
+      </div>
+      <div id="profForm">
+        <div class="hint" style="margin-top:0">กรอกวันเดือนปีเกิดครั้งเดียว ระบบคำนวณวันเกิด ราศี และปีนักษัตรให้อัตโนมัติ — ข้อมูลเก็บในเครื่องของคุณเท่านั้น ไม่ส่งไปไหน</div>
+        <input type="date" id="dobInput" min="1930-01-01" max="2026-12-31">
+        <button class="btn" id="btnProfSave">บันทึกดวงของฉัน ✦</button>
+      </div>
+    </div>
+
     <div class="ritual">
       <div class="label">📅 ดวงวันนี้ตามวันเกิดของคุณ</div>
       <div class="chips daychips" id="bdayChips" role="group" aria-label="เลือกวันเกิด"></div>
@@ -825,6 +850,14 @@ function init(){
   $('btnCouple').addEventListener('click', startCouple);
   $('btnCoupleShare').addEventListener('click', shareCouple);
   buildBdayChips();
+  $('btnProfSave').addEventListener('click', saveProfileFromInput);
+  $('btnProfEdit').addEventListener('click', ()=>{ $('profView').style.display='none'; $('profForm').style.display='block'; });
+  renderProfile();
+  const prof0 = loadProfile();
+  if (prof0 && !bdayPick){
+    bdayPick = prof0.day;
+    document.querySelectorAll('#bdayChips .chip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.d===prof0.day ? 'true' : 'false'));
+  }
   $('btnDreamShare').addEventListener('click', shareDream);
   $('btnDreamBack').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
   $('btnDreamBack2').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
@@ -1141,6 +1174,12 @@ function renderCardFace(){
 }
 
 /* ================= API ================= */
+function withProfile(q){
+  const p = loadProfile();
+  if (!p) return q;
+  const tag = '(ผู้ถามเกิดวัน' + p.day + ' ราศี' + p.zodiac + ' ปี' + p.naksat + ')';
+  return ((q||'') + ' ' + tag).trim().slice(0, 200);
+}
 async function fetchReading(cur){
   const c = DECK[cur.cardIndex];
   const res = await fetch(CONFIG.WORKER_URL, {
@@ -1149,7 +1188,7 @@ async function fetchReading(cur){
     body: JSON.stringify({
       card: c.en, cardTh: c.th,
       orientation: cur.reversed ? 'reversed' : 'upright',
-      topic: cur.topic, question: cur.question,
+      topic: cur.topic, question: withProfile(cur.question),
     })
   });
   const j = await res.json().catch(()=>({}));
@@ -1409,6 +1448,52 @@ function openMu(){
       const x = MU_COLORS[d];
       return '<tr'+(d===today?' class="today"':'')+'><td>'+d+'</td><td>'+x.lucky.map(a=>a[0]).join(', ')+'</td><td>'+x.money.map(a=>a[0]).join(', ')+'</td><td>'+x.avoid.map(a=>a[0]).join(', ')+'</td></tr>';
     }).join('');
+}
+
+/* ---------- ดวงประจำตัว (วันเกิด/ราศี/นักษัตร — คำนวณในเครื่อง) ---------- */
+const LS_PROF = 'mm_profile';
+const ZODIAC_START = ['กุมภ์','มีน','เมษ','พฤษภ','เมถุน','กรกฎ','สิงห์','กันย์','ตุลย์','พิจิก','ธนู','มังกร'];
+const ZODIAC_CUT   = [20,19,21,20,21,21,23,23,23,23,22,22];
+const NAKSAT = ['ชวด','ฉลู','ขาล','เถาะ','มะโรง','มะเส็ง','มะเมีย','มะแม','วอก','ระกา','จอ','กุน'];
+function zodiacOf(m, d){ // m = 0-11
+  return d >= ZODIAC_CUT[m] ? ZODIAC_START[m] : ZODIAC_START[(m+11)%12];
+}
+function loadProfile(){
+  try{
+    const j = JSON.parse(localStorage.getItem(LS_PROF)||'null');
+    if (j && j.day) return j;
+  }catch(e){}
+  return null;
+}
+function saveProfileFromInput(){
+  const v = $('dobInput').value;
+  if (!v){ $('dobInput').focus(); return; }
+  const dt = new Date(v + 'T12:00:00');
+  if (isNaN(dt)) return;
+  const day = THAI_DAYS[dt.getDay()];
+  const zodiac = zodiacOf(dt.getMonth(), dt.getDate());
+  const be = dt.getFullYear() + 543;
+  const naksat = NAKSAT[(((be - 2551) % 12) + 12) % 12];
+  const prof = { dob: v, day, zodiac, naksat, be };
+  try{ localStorage.setItem(LS_PROF, JSON.stringify(prof)); }catch(e){}
+  // ตั้งวันเกิดให้หน้าดวงวันเกิดอัตโนมัติ
+  bdayPick = day;
+  try{ localStorage.setItem('mm_bdayday', day); }catch(e){}
+  document.querySelectorAll('#bdayChips .chip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.d===day ? 'true' : 'false'));
+  renderProfile();
+}
+function renderProfile(){
+  const p = loadProfile();
+  if (p){
+    $('profView').style.display='block';
+    $('profForm').style.display='none';
+    $('profText').innerHTML = '🌟 เกิดวัน' + p.day + ' · ราศี' + p.zodiac + ' · ปี' + p.naksat
+      + '<small>ปีเกิด พ.ศ. ' + p.be + ' — ใช้เสริมความแม่นให้คำทำนายอัตโนมัติ (ราศีแบบสากล)</small>';
+    if ($('dobInput')) $('dobInput').value = p.dob;
+  } else {
+    $('profView').style.display='none';
+    $('profForm').style.display='block';
+  }
 }
 
 /* ---------- ดวงวันเกิด (AI) ---------- */
