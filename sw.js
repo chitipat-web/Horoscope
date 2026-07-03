@@ -2,7 +2,7 @@
  * กฎเหล็ก (บทเรียนจาก RUDY): bypass API ภายนอกที่ "บรรทัดแรก" ของ fetch handler
  * ก่อนเช็คอย่างอื่นทั้งหมด — กันบั๊ก Safari iOS PWA intercept CORS preflight → TypeError
  */
-const CACHE = 'mormoo-v4'; // เวลาอัปเดตแอป ให้ bump เลขนี้
+const CACHE = 'mormoo-v5'; // เวลาอัปเดตแอป ให้ bump เลขนี้
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -24,7 +24,8 @@ self.addEventListener('fetch', (e) => {
     u.includes('workers.dev') ||
     u.includes('generativelanguage') ||
     u.includes('fonts.googleapis') ||
-    u.includes('fonts.gstatic')
+    u.includes('fonts.gstatic') ||
+    u.includes('cloudflareinsights')
   ) return;
 
   if (e.request.method !== 'GET') return;

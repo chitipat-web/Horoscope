@@ -242,6 +242,20 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
   display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
   color:var(--dim);font-size:14px;
 }
+.streakchip{text-align:center;margin-top:14px;color:var(--gold);font-size:14.5px}
+.streakchip b{font-size:17px}
+
+/* friend modal */
+#friendModal{position:fixed;inset:0;z-index:60;display:none;background:rgba(4,2,12,.9);padding:20px;align-items:center;justify-content:center}
+#friendModal.on{display:flex}
+.fm-box{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+.fm-box input{
+  width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:14px;min-height:52px;outline:none;margin-top:6px;
+}
+.fm-box input:focus{border-color:var(--gold)}
+.fm-box .hint{margin-top:8px}
 .err{color:var(--danger);text-align:center;font-size:15px;margin-top:14px;line-height:1.7}
 
 footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-height:1.7}
@@ -329,7 +343,9 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
             <div><div class="t">เลขนำโชค</div><div class="v" id="numbers"></div></div>
           </div>
         </div>
+        <div class="streakchip" id="streakchip"></div>
         <button class="btn" id="btnShare">แชร์การ์ดดวง 📤</button>
+        <button class="btn ghost" id="btnFriend">ส่งไพ่ให้เพื่อน 💌</button>
         <div class="lockchip" id="lockchip"></div>
       </div>
       <div id="errArea" style="display:none">
@@ -461,6 +477,16 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
   <footer>ดวงวันนี้เพื่อความบันเทิงเท่านั้น ✨<br>หมอมู AI · ภาพไพ่: Rider–Waite–Smith (ค.ศ. 1909, สาธารณสมบัติ)</footer>
 </div>
 
+<div id="friendModal" role="dialog" aria-label="ส่งไพ่ให้เพื่อน">
+  <div class="fm-box">
+    <div class="label">ส่งไพ่ให้เพื่อน 💌</div>
+    <input id="friendName" maxlength="20" placeholder="พิมพ์ชื่อเพื่อน เช่น มายด์" autocomplete="off">
+    <div class="hint">หมอมูจะจั่วไพ่ให้เพื่อนหนึ่งใบ พร้อมคำอวยพร เอาไปส่งต่อได้เลย</div>
+    <button class="btn" id="btnFriendGo">จั่วไพ่ให้เพื่อน ✦</button>
+    <button class="btn ghost" id="btnFriendClose">ปิด</button>
+  </div>
+</div>
+
 <div id="shareModal" role="dialog" aria-label="บันทึกการ์ดดวง">
   <img id="shareImg" alt="การ์ดดวงวันนี้">
   <p>กดค้างที่รูปเพื่อบันทึก แล้วเอาไปลงสตอรี่ได้เลย</p>
@@ -554,6 +580,7 @@ const THAI_DAYS = ['อาทิตย์','จันทร์','อังคา
 
 /* ================= STATE ================= */
 const LS_KEY = 'mm_daily';
+const LS_STREAK = 'mm_streak';
 let topic = 'ดวงรวม';
 let current = null;      // {cardIndex, reversed, topic, question}
 let result = null;       // AI result
@@ -579,11 +606,15 @@ function init(){
   $('btnDraw').addEventListener('click', startDraw);
   $('btnShare').addEventListener('click', shareCard);
   $('btnRetry').addEventListener('click', retry);
+  $('btnFriend').addEventListener('click', ()=>{ $('friendModal').classList.add('on'); $('friendName').focus(); });
+  $('btnFriendClose').addEventListener('click', ()=>$('friendModal').classList.remove('on'));
+  $('btnFriendGo').addEventListener('click', friendCard);
 
   // ถ้าวันนี้เปิดไพ่แล้ว → โชว์ผลเดิม
   const saved = loadDaily();
   if (saved){
     current = saved.current; result = saved.result;
+    bumpStreak(); // เผื่อเปิดไพ่ไว้ก่อนมีระบบสตรีค
     showScreen('screen-result');
     renderCardFace();
     $('flip').classList.add('go');
@@ -738,6 +769,10 @@ function renderResult(data){
   $('colorName').textContent = col.name || 'ทองอำพัน';
   const nums = Array.isArray(data.numbers) ? data.numbers.slice(0,2) : [7,24];
   $('numbers').innerHTML = nums.map(n=>'<span class="numchip">'+String(n)+'</span>').join('');
+  const st = getStreak();
+  $('streakchip').innerHTML = st >= 2
+    ? '🔥 เปิดไพ่ติดต่อกัน <b>' + st + '</b> วันแล้ว'
+    : (st === 1 ? '🔥 เริ่มสตรีคเปิดไพ่วันแรก — กลับมาพรุ่งนี้ให้ครบ 2 วัน' : '');
   startCountdown();
 }
 
@@ -757,9 +792,30 @@ function startCountdown(){
   tick(); countdownTimer = setInterval(tick, 1000);
 }
 
-/* ================= DAILY LOCK ================= */
+/* ================= DAILY LOCK + STREAK ================= */
 function saveDaily(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify({date: todayStr(), current, result})); }catch(e){}
+  bumpStreak();
+}
+function bumpStreak(){
+  const today = todayStr();
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(LS_STREAK)||'null'); }catch(e){}
+  if (!s || !s.last) s = { count: 0, last: '' };
+  if (s.last === today) return s.count; // วันนี้นับแล้ว
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const ystr = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+  s.count = (s.last === ystr) ? s.count + 1 : 1;
+  s.last = today;
+  try{ localStorage.setItem(LS_STREAK, JSON.stringify(s)); }catch(e){}
+  return s.count;
+}
+function getStreak(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_STREAK)||'null');
+    if (s && s.last === todayStr()) return s.count;
+  }catch(e){}
+  return 0;
 }
 function loadDaily(){
   try{
@@ -801,7 +857,8 @@ async function shareCard(){
     x.fillText(CONFIG.APP_NAME + ' 🔮', W/2, 150);
     x.fillStyle = '#b9aed6';
     x.font = "500 34px Sarabun, sans-serif";
-    x.fillText('ไพ่ประจำวัน' + THAI_DAYS[new Date().getDay()] + ' · ' + (current.topic||'ดวงรวม'), W/2, 210);
+    const streakTxt = getStreak() >= 2 ? ' · 🔥 วันที่ ' + getStreak() : '';
+    x.fillText('ไพ่ประจำวัน' + THAI_DAYS[new Date().getDay()] + ' · ' + (current.topic||'ดวงรวม') + streakTxt, W/2, 210);
 
     // tarot card — ภาพไพ่จริง (RWS) พร้อมกรอบทอง
     const cw=440, ch=760, cx=(W-cw)/2, cy=240;
@@ -873,6 +930,95 @@ async function shareCard(){
     }
   }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
   btn.disabled = false; btn.textContent = 'แชร์การ์ดดวง 📤';
+}
+
+/* ================= FRIEND CARD (ส่งไพ่ให้เพื่อน) ================= */
+async function friendCard(){
+  const name = $('friendName').value.trim().slice(0,20);
+  if (!name){ $('friendName').focus(); return; }
+  const btn = $('btnFriendGo');
+  btn.disabled = true; btn.textContent = 'กำลังจั่วไพ่…';
+  try{
+    // จั่วตั้งตรงเสมอ — การ์ดอวยพร ไม่ส่งไพ่กลับหัวให้เพื่อน
+    const idx = Math.floor(Math.random()*DECK.length);
+    const c = DECK[idx];
+    try{ await document.fonts.load('700 70px Srisakdi'); await document.fonts.load('700 44px Sarabun'); await document.fonts.ready; }catch(e){}
+    const cv = $('cv'); const x = cv.getContext('2d');
+    const W=1080, H=1920;
+
+    // BG + ดาว
+    const g = x.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1458'); g.addColorStop(.55,'#140a30'); g.addColorStop(1,'#0b0620');
+    x.fillStyle = g; x.fillRect(0,0,W,H);
+    for(let i=0;i<130;i++){
+      x.globalAlpha = Math.random()*0.7+0.15; x.fillStyle = '#fff';
+      x.beginPath(); x.arc(Math.random()*W, Math.random()*H, Math.random()*2.2+0.6, 0, 7); x.fill();
+    }
+    x.globalAlpha = 1;
+
+    // header
+    x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.fillStyle = '#f0c96a';
+    x.font = "700 64px Srisakdi, Sarabun, serif";
+    x.fillText(CONFIG.APP_NAME + ' 🔮', W/2, 150);
+    x.fillStyle = '#f1eafe';
+    x.font = "600 40px Sarabun, sans-serif";
+    x.fillText('มีคนจั่วไพ่ใบนี้ให้ “' + name + '” 💌', W/2, 218);
+
+    // card image
+    const cw=440, ch=760, cx=(W-cw)/2, cy=250;
+    rrect(x, cx-8, cy-8, cw+16, ch+16, 34); x.fillStyle='#c8973f'; x.fill();
+    rrect(x, cx-2, cy-2, cw+4, ch+4, 30); x.fillStyle='#fdf8ea'; x.fill();
+    let art = null;
+    try{ art = await loadImage(cardImg(idx)); }catch(e){}
+    x.save();
+    rrect(x, cx, cy, cw, ch, 26); x.clip();
+    if (art){
+      const r = Math.max(cw/art.width, ch/art.height);
+      x.drawImage(art, cx+cw/2-art.width*r/2, cy+ch/2-art.height*r/2, art.width*r, art.height*r);
+    } else {
+      x.fillStyle='#efe3c2'; x.fillRect(cx,cy,cw,ch);
+      x.font = "240px 'Apple Color Emoji','Segoe UI Emoji',sans-serif";
+      x.textBaseline='middle'; x.fillStyle='#5a3c12';
+      x.fillText(c.e, cx+cw/2, cy+ch/2);
+      x.textBaseline='alphabetic';
+    }
+    x.restore();
+
+    // card name + meaning
+    x.fillStyle = '#f0c96a';
+    x.font = "700 62px Srisakdi, Sarabun, serif";
+    x.fillText(c.th, W/2, cy+ch+80);
+    x.fillStyle = '#b9aed6';
+    x.font = "600 26px Sarabun, sans-serif";
+    x.fillText((c.n + ' · ' + c.en).toUpperCase(), W/2, cy+ch+124);
+
+    x.fillStyle = '#f1eafe';
+    x.font = "400 38px Sarabun, sans-serif";
+    const lines = wrapThai(x, c.up, 880, 4);
+    let ty = cy+ch+200;
+    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 58; });
+
+    // blessing + watermark
+    x.fillStyle = '#f0c96a';
+    x.font = "700 46px Srisakdi, Sarabun, serif";
+    x.fillText('ขอให้เป็นวันที่ดีของ' + name + ' ✨', W/2, 1720);
+    x.fillStyle = '#8f82b8';
+    x.font = "500 32px Sarabun, sans-serif";
+    x.fillText('เปิดไพ่ของตัวเองฟรีที่ ' + CONFIG.APP_URL, W/2, 1830);
+
+    // export
+    const blob = await new Promise(r=>cv.toBlob(r,'image/png'));
+    const file = new File([blob], 'mormoo-friend.png', {type:'image/png'});
+    $('friendModal').classList.remove('on');
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'ไพ่ถึง ' + name + ' 🔮'});
+    } else {
+      $('shareImg').src = URL.createObjectURL(blob);
+      $('shareModal').classList.add('on');
+    }
+  }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
+  btn.disabled = false; btn.textContent = 'จั่วไพ่ให้เพื่อน ✦';
 }
 
 function rrect(x, X, Y, Wd, Ht, R){
