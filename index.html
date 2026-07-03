@@ -121,6 +121,7 @@ header{text-align:center;margin-bottom:8px}
   background:rgba(240,201,106,.16);border-color:var(--gold);color:var(--gold);font-weight:600;
 }
 .chip:active{transform:scale(.96)}
+.chip.done::after{content:' ✓';color:var(--gold);font-weight:700}
 #q{
   width:100%;margin-top:6px;
   font-family:inherit;font-size:16px;color:var(--ink);
@@ -248,9 +249,9 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
 .streakchip{text-align:center;margin-top:14px;color:var(--gold);font-size:14.5px}
 .streakchip b{font-size:17px}
 
-/* friend modal */
-#friendModal{position:fixed;inset:0;z-index:60;display:none;background:rgba(4,2,12,.9);padding:20px;align-items:center;justify-content:center}
-#friendModal.on{display:flex}
+/* friend + unlock modal */
+#friendModal,#unlockModal{position:fixed;inset:0;z-index:60;display:none;background:rgba(4,2,12,.9);padding:20px;align-items:center;justify-content:center}
+#friendModal.on,#unlockModal.on{display:flex}
 .fm-box{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
 .fm-box input{
   width:100%;font-family:inherit;font-size:16px;color:var(--ink);
@@ -348,6 +349,7 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
         </div>
         <div class="streakchip" id="streakchip"></div>
         <button class="btn" id="btnShare">แชร์การ์ดดวง 📤</button>
+        <button class="btn ghost" id="btnMore">เปิดไพ่หัวข้ออื่น ✨</button>
         <button class="btn ghost" id="btnFriend">ส่งไพ่ให้เพื่อน 💌</button>
         <div class="lockchip" id="lockchip"></div>
       </div>
@@ -480,6 +482,15 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
   <footer>ดวงวันนี้เพื่อความบันเทิงเท่านั้น ✨<br>หมอมู AI · ภาพไพ่: Rider–Waite–Smith (ค.ศ. 1909, สาธารณสมบัติ)</footer>
 </div>
 
+<div id="unlockModal" role="dialog" aria-label="ปลดล็อกไพ่หัวข้อใหม่">
+  <div class="fm-box">
+    <div class="label">🔓 เปิดไพ่อีกหัวข้อวันนี้</div>
+    <div class="hint" style="font-size:14.5px;line-height:1.8">วันนี้เปิดไพ่ใบแรกไปแล้ว — แชร์การ์ดดวงของวันนี้ 1 ครั้ง เพื่อปลดล็อกการเปิดไพ่หัวข้ออื่นๆ ได้ทั้งวัน (หัวข้อละ 1 ใบ)</div>
+    <button class="btn" id="btnUnlockShare">แชร์การ์ดดวง 📤</button>
+    <button class="btn ghost" id="btnUnlockClose">ไว้พรุ่งนี้ค่อยเปิด</button>
+  </div>
+</div>
+
 <div id="friendModal" role="dialog" aria-label="ส่งไพ่ให้เพื่อน">
   <div class="fm-box">
     <div class="label">ส่งไพ่ให้เพื่อน 💌</div>
@@ -582,8 +593,9 @@ const loadImage = src => new Promise((res,rej)=>{ const im=new Image(); im.onloa
 const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 
 /* ================= STATE ================= */
-const LS_KEY = 'mm_daily';
+const LS_KEY = 'mm_daily';   // v2: {date, last, entries:{หัวข้อ:{current,result}}}
 const LS_STREAK = 'mm_streak';
+const LS_SHARE = 'mm_share'; // {date} — แชร์แล้ววันนี้ = ปลดล็อกหัวข้อเพิ่ม
 let topic = 'ดวงรวม';
 let current = null;      // {cardIndex, reversed, topic, question}
 let result = null;       // AI result
@@ -613,10 +625,22 @@ function init(){
   $('btnFriendClose').addEventListener('click', ()=>$('friendModal').classList.remove('on'));
   $('btnFriendGo').addEventListener('click', friendCard);
 
-  // ถ้าวันนี้เปิดไพ่แล้ว → โชว์ผลเดิม
-  const saved = loadDaily();
-  if (saved){
-    current = saved.current; result = saved.result;
+  $('btnMore').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
+  $('btnUnlockClose').addEventListener('click', ()=>$('unlockModal').classList.remove('on'));
+  $('btnUnlockShare').addEventListener('click', async ()=>{
+    $('unlockModal').classList.remove('on');
+    await shareCard();
+    if (sharedToday()){ buildFan(); showScreen('screen-pick'); }
+  });
+
+  // ถ้าวันนี้เปิดไพ่แล้ว → โชว์ผลหัวข้อล่าสุด
+  const day = loadDay();
+  const lastTopic = (day.last && day.entries[day.last]) ? day.last : Object.keys(day.entries)[0];
+  if (lastTopic){
+    const e = day.entries[lastTopic];
+    current = e.current; result = e.result;
+    topic = current.topic || 'ดวงรวม';
+    document.querySelectorAll('#topics .chip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.t===topic ? 'true' : 'false'));
     bumpStreak(); // เผื่อเปิดไพ่ไว้ก่อนมีระบบสตรีค
     showScreen('screen-result');
     renderCardFace();
@@ -625,6 +649,7 @@ function init(){
   } else {
     showScreen('screen-home');
   }
+  updateChips();
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
@@ -648,9 +673,31 @@ function showScreen(id){
 
 /* ================= DRAW FLOW ================= */
 function startDraw(){
-  if (loadDaily()){ showScreen('screen-result'); return; }
+  const day = loadDay();
+  const e = day.entries[topic];
+  if (e){
+    // หัวข้อนี้เปิดแล้ววันนี้ → โชว์ผลเดิม
+    current = e.current; result = e.result;
+    renderCardFace();
+    showScreen('screen-result');
+    $('flip').classList.add('go');
+    renderResult(result);
+    return;
+  }
+  // ใบแรกของวันฟรี — หัวข้อถัดไปต้องแชร์ก่อน (ปลดล็อกทั้งวัน)
+  if (Object.keys(day.entries).length >= 1 && !sharedToday()){
+    $('unlockModal').classList.add('on');
+    return;
+  }
   buildFan();
   showScreen('screen-pick');
+}
+
+function updateChips(){
+  const day = loadDay();
+  document.querySelectorAll('#topics .chip').forEach(c=>{
+    c.classList.toggle('done', !!day.entries[c.dataset.t]);
+  });
 }
 
 function buildFan(){
@@ -698,7 +745,7 @@ function choose(pickIdx){
 
   apiPromise.then(data=>{
     result = data;
-    saveDaily();
+    saveEntry();
     setTimeout(()=>renderResult(data), 950); // รอ flip จบก่อนโชว์คำทำนาย
   }).catch(err=>{
     setTimeout(()=>showError(err), 950);
@@ -752,7 +799,7 @@ function retry(){
   $('errArea').style.display='none';
   $('loadingArea').style.display='block';
   fetchReading(current).then(data=>{
-    result = data; saveDaily(); renderResult(data);
+    result = data; saveEntry(); renderResult(data);
   }).catch(err=>showError(err));
 }
 
@@ -796,9 +843,33 @@ function startCountdown(){
 }
 
 /* ================= DAILY LOCK + STREAK ================= */
-function saveDaily(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify({date: todayStr(), current, result})); }catch(e){}
+function loadDay(){
+  const blank = { date: todayStr(), last: '', entries: {} };
+  try{
+    const j = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if (!j || j.date !== todayStr()) return blank;
+    if (j.entries) return j;
+    // migrate จากฟอร์แมตเก่า {date, current, result}
+    if (j.current && j.result){
+      const t = j.current.topic || 'ดวงรวม';
+      return { date: j.date, last: t, entries: { [t]: { current: j.current, result: j.result } } };
+    }
+  }catch(e){}
+  return blank;
+}
+function saveEntry(){
+  const day = loadDay();
+  day.entries[current.topic || 'ดวงรวม'] = { current, result };
+  day.last = current.topic || 'ดวงรวม';
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(day)); }catch(e){}
   bumpStreak();
+  updateChips();
+}
+function sharedToday(){
+  try{ const j = JSON.parse(localStorage.getItem(LS_SHARE)||'null'); return !!(j && j.date === todayStr()); }catch(e){ return false; }
+}
+function markShared(){
+  try{ localStorage.setItem(LS_SHARE, JSON.stringify({date: todayStr()})); }catch(e){}
 }
 function bumpStreak(){
   const today = todayStr();
@@ -819,13 +890,6 @@ function getStreak(){
     if (s && s.last === todayStr()) return s.count;
   }catch(e){}
   return 0;
-}
-function loadDaily(){
-  try{
-    const j = JSON.parse(localStorage.getItem(LS_KEY)||'null');
-    if (j && j.date === todayStr() && j.result) return j;
-  }catch(e){}
-  return null;
 }
 
 /* ================= SHARE CARD (Canvas 1080x1920) ================= */
@@ -927,9 +991,11 @@ async function shareCard(){
     const file = new File([blob], 'mormoo-daily.png', {type:'image/png'});
     if (navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'ไพ่ดวงวันนี้ 🔮'});
+      markShared(); // แชร์สำเร็จ → ปลดล็อกหัวข้อเพิ่มของวันนี้
     } else {
       $('shareImg').src = URL.createObjectURL(blob);
       $('shareModal').classList.add('on');
+      markShared();
     }
   }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
   btn.disabled = false; btn.textContent = 'แชร์การ์ดดวง 📤';
@@ -1016,9 +1082,11 @@ async function friendCard(){
     $('friendModal').classList.remove('on');
     if (navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'ไพ่ถึง ' + name + ' 🔮'});
+      markShared(); // ส่งไพ่ให้เพื่อนก็นับเป็นการแชร์ ปลดล็อกได้เหมือนกัน
     } else {
       $('shareImg').src = URL.createObjectURL(blob);
       $('shareModal').classList.add('on');
+      markShared();
     }
   }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
   btn.disabled = false; btn.textContent = 'จั่วไพ่ให้เพื่อน ✦';
