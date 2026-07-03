@@ -161,7 +161,7 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
 
 /* ============ FLIP / RESULT CARD ============ */
 .flipwrap{display:flex;justify-content:center;margin:20px 0 8px;perspective:1100px}
-.flip{position:relative;width:210px;height:340px;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,.7,.3,1)}
+.flip{position:relative;width:208px;height:356px;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,.7,.3,1)}
 .flip.go{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px}
 .face.front{transform:rotateY(180deg)}
@@ -178,6 +178,17 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-o
 .tarot .art.rev{transform:rotate(180deg)}
 .tarot .nameth{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:27px;color:#5a3c12;line-height:1.1}
 .tarot .nameen{font-size:11.5px;letter-spacing:.14em;color:#8a6a2b;text-transform:uppercase;margin-top:2px}
+.tarot.photo{padding:7px;justify-content:center}
+.tarot-img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;background:#efe3c2}
+.tarot-img.rev{transform:rotate(180deg)}
+.cardtitle{margin-top:14px;text-align:center}
+.cardtitle .ct-th{display:block;font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:32px;color:var(--gold);line-height:1.15;text-shadow:0 0 16px rgba(240,201,106,.3)}
+.cardtitle .ct-en{display:block;font-size:12px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+.meaning{
+  margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  background:rgba(0,0,0,.22);padding:13px 14px;font-size:14.5px;line-height:1.75;color:var(--dim);
+}
+.meaning b{color:var(--ink);font-weight:600}
 .revbadge{
   display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:#ffbcbc;
   border:1px solid rgba(255,157,157,.5);border-radius:999px;padding:4px 12px;background:rgba(255,80,80,.12);
@@ -281,6 +292,7 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
       <div id="resultArea" style="display:none">
         <div class="keyword" id="keyword"></div>
         <p class="reading" id="reading"></p>
+        <div class="meaning" id="meaning"></div>
         <div class="advice" id="advice"></div>
         <div class="lucky">
           <div class="box">
@@ -302,7 +314,7 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
     </div>
   </section>
 
-  <footer>ดวงวันนี้เพื่อความบันเทิงเท่านั้น ✨<br>หมอมู AI</footer>
+  <footer>ดวงวันนี้เพื่อความบันเทิงเท่านั้น ✨<br>หมอมู AI · ภาพไพ่: Rider–Waite–Smith (ค.ศ. 1909, สาธารณสมบัติ)</footer>
 </div>
 
 <div id="shareModal" role="dialog" aria-label="บันทึกการ์ดดวง">
@@ -321,31 +333,79 @@ const CONFIG = {
   APP_NAME: 'หมอมู AI',
 };
 
-/* ================= DECK (Major Arcana 22) ================= */
+/* ================= DECK (Major Arcana 22) =================
+ * ภาพไพ่: สำรับ Rider–Waite–Smith (ค.ศ. 1909) — สาธารณสมบัติ อยู่ที่ ./cards/00.jpg–21.jpg
+ * up/rev: ความหมายไพ่ตั้งตรง/กลับหัว (โชว์ใต้คำทำนาย AI) */
 const DECK = [
-  {n:'0',    en:'The Fool',            th:'ผู้เริ่มต้น',      e:'🎒'},
-  {n:'I',    en:'The Magician',        th:'นักมายากล',       e:'✨'},
-  {n:'II',   en:'The High Priestess',  th:'นักบวชหญิง',      e:'🌙'},
-  {n:'III',  en:'The Empress',         th:'จักรพรรดินี',     e:'🌹'},
-  {n:'IV',   en:'The Emperor',         th:'จักรพรรดิ',       e:'👑'},
-  {n:'V',    en:'The Hierophant',      th:'มหาคุรุ',         e:'🛕'},
-  {n:'VI',   en:'The Lovers',          th:'คู่รัก',           e:'💞'},
-  {n:'VII',  en:'The Chariot',         th:'ราชรถ',           e:'🐎'},
-  {n:'VIII', en:'Strength',            th:'พลังใจ',          e:'🦁'},
-  {n:'IX',   en:'The Hermit',          th:'ฤๅษี',            e:'🏮'},
-  {n:'X',    en:'Wheel of Fortune',    th:'กงล้อโชคชะตา',    e:'🎡'},
-  {n:'XI',   en:'Justice',             th:'ตราชูยุติธรรม',   e:'⚖️'},
-  {n:'XII',  en:'The Hanged Man',      th:'ชายห้อยหัว',      e:'🙃'},
-  {n:'XIII', en:'Death',               th:'การเปลี่ยนผ่าน',  e:'🦋'},
-  {n:'XIV',  en:'Temperance',          th:'ความพอดี',        e:'🕊️'},
-  {n:'XV',   en:'The Devil',           th:'เงามืด',          e:'⛓️'},
-  {n:'XVI',  en:'The Tower',           th:'หอคอย',           e:'⚡'},
-  {n:'XVII', en:'The Star',            th:'ดวงดาว',          e:'🌠'},
-  {n:'XVIII',en:'The Moon',            th:'ดวงจันทร์',       e:'🌕'},
-  {n:'XIX',  en:'The Sun',             th:'ดวงอาทิตย์',      e:'☀️'},
-  {n:'XX',   en:'Judgement',           th:'เสียงปลุกตื่น',   e:'📯'},
-  {n:'XXI',  en:'The World',           th:'โลกสมบูรณ์',      e:'🌍'},
+  {n:'0',    en:'The Fool',            th:'ผู้เริ่มต้น',      e:'🎒',
+   up:'การเริ่มต้นใหม่ อิสระ และความกล้าออกเดินทาง โอกาสใหม่กำลังเปิดให้กับใจที่เปิดกว้าง',
+   rev:'ความประมาทหรือขาดการวางแผน ลังเลจนพลาดจังหวะ ควรคิดให้รอบคอบก่อนก้าวถัดไป'},
+  {n:'I',    en:'The Magician',        th:'นักมายากล',       e:'✨',
+   up:'พลังสร้างสรรค์และทักษะพร้อมใช้ ลงมือทำสิ่งใดมักสำเร็จ การสื่อสารเจรจาโดดเด่นเป็นพิเศษ',
+   rev:'ระวังการหลอกลวงหรือใช้ความสามารถผิดทาง บางทีคุณยังไม่เชื่อในศักยภาพของตัวเองพอ'},
+  {n:'II',   en:'The High Priestess',  th:'นักบวชหญิง',      e:'🌙',
+   up:'สัญชาตญาณเฉียบคม ความลับกำลังคลี่คลาย จงเงียบฟังเสียงภายในของตัวเอง',
+   rev:'กำลังเพิกเฉยต่อลางสังหรณ์ ความจริงบางอย่างถูกปิดบัง อย่าให้อารมณ์บดบังการตัดสินใจ'},
+  {n:'III',  en:'The Empress',         th:'จักรพรรดินี',     e:'🌹',
+   up:'ความอุดมสมบูรณ์และความอบอุ่น ถึงเวลาเก็บเกี่ยวผลจากสิ่งที่ตั้งใจดูแลมานาน',
+   rev:'พึ่งพิงผู้อื่นมากไปหรือละเลยการดูแลตัวเอง พลังสร้างสรรค์ชะงัก ต้องเติมพลังให้ตัวเองก่อน'},
+  {n:'IV',   en:'The Emperor',         th:'จักรพรรดิ',       e:'👑',
+   up:'ความมั่นคง อำนาจ และการจัดระเบียบชีวิต ผู้ใหญ่หรือคนมีประสบการณ์พร้อมสนับสนุน',
+   rev:'ระวังการควบคุมมากเกินไปหรือความดื้อรั้น กรอบที่แข็งเกินอาจกดทับคนรอบข้าง'},
+  {n:'V',    en:'The Hierophant',      th:'มหาคุรุ',         e:'🛕',
+   up:'ครูบาอาจารย์และคำแนะนำที่เชื่อถือได้ การเดินตามครรลองที่ถูกต้องจะนำพาไปสู่ความสำเร็จ',
+   rev:'ถึงเวลาตั้งคำถามกับสิ่งเดิมๆ และหาทางของตัวเอง แต่ระวังคำแนะนำที่ชวนหลงทาง'},
+  {n:'VI',   en:'The Lovers',          th:'คู่รัก',           e:'💞',
+   up:'ความรักความกลมเกลียว และการตัดสินใจครั้งสำคัญด้วยหัวใจ ความสัมพันธ์กำลังแน่นแฟ้น',
+   rev:'ความไม่ลงรอยหรือทางเลือกที่ขัดแย้งในใจ ความสัมพันธ์ต้องการการสื่อสารอย่างตรงไปตรงมา'},
+  {n:'VII',  en:'The Chariot',         th:'ราชรถ',           e:'🐎',
+   up:'ชัยชนะจากความมุ่งมั่น คุณกุมบังเหียนชีวิตไว้ได้ เดินหน้าเต็มกำลังได้เลย',
+   rev:'เจอแรงต้านหรือหลงทิศชั่วคราว อย่าใจร้อนจนเสียการควบคุม ตั้งหลักแล้วค่อยไปต่อ'},
+  {n:'VIII', en:'Strength',            th:'พลังใจ',          e:'🦁',
+   up:'ความกล้าที่มาจากความสงบ ความอ่อนโยนคือพลังที่แท้จริง อุปสรรคใหญ่แค่ไหนก็เอาชนะได้',
+   rev:'ความมั่นใจสั่นคลอนหรือพลังใจอ่อนล้า ถึงเวลากลับมาดูแลหัวใจตัวเองอย่างใจดี'},
+  {n:'IX',   en:'The Hermit',          th:'ฤๅษี',            e:'🏮',
+   up:'ช่วงเวลาแห่งการใคร่ครวญ คำตอบที่ตามหาอยู่ในความสงบภายใน ไม่ใช่เสียงรอบข้าง',
+   rev:'แยกตัวโดดเดี่ยวนานเกินไป ถึงเวลาเปิดประตูกลับมาเชื่อมโยงกับผู้คนบ้างแล้ว'},
+  {n:'X',    en:'Wheel of Fortune',    th:'กงล้อโชคชะตา',    e:'🎡',
+   up:'โชคชะตากำลังหมุนเข้าหา การเปลี่ยนแปลงในทางที่ดี จังหวะชีวิตกำลังเป็นขาขึ้น',
+   rev:'ติดขัดชั่วคราวหรือรู้สึกวนอยู่ที่เดิม อดทนอีกนิด กงล้อไม่เคยหยุดหมุน'},
+  {n:'XI',   en:'Justice',             th:'ตราชูยุติธรรม',   e:'⚖️',
+   up:'ความยุติธรรมและผลลัพธ์ตามเหตุที่ทำ เรื่องข้อตกลงหรือเอกสารจะได้ความชัดเจน',
+   rev:'ระวังความไม่เป็นธรรมหรือการเลี่ยงความรับผิดชอบ ตรวจสอบข้อเท็จจริงให้ถี่ถ้วน'},
+  {n:'XII',  en:'The Hanged Man',      th:'ชายห้อยหัว',      e:'🙃',
+   up:'การหยุดรอที่มีความหมาย มุมมองใหม่จะมาเมื่อยอมมองต่างมุม การเสียสละวันนี้คุ้มค่าในวันหน้า',
+   rev:'ยื้อเวลาโดยเปล่าประโยชน์หรือติดหล่มเดิม ถึงเวลาปล่อยแล้วขยับตัวเสียที'},
+  {n:'XIII', en:'Death',               th:'การเปลี่ยนผ่าน',  e:'🦋',
+   up:'บทเก่ากำลังจบเพื่อเปิดบทใหม่ ปล่อยสิ่งที่หมดหน้าที่แล้ว พื้นที่ใหม่กำลังรอสิ่งที่ดีกว่า',
+   rev:'กำลังต่อต้านการเปลี่ยนแปลงที่เลี่ยงไม่ได้ ยิ่งแบกของเก่าไว้ยิ่งหนัก ค่อยๆ วางลงทีละอย่าง'},
+  {n:'XIV',  en:'Temperance',          th:'ความพอดี',        e:'🕊️',
+   up:'ความสมดุลและการประนีประนอม ค่อยเป็นค่อยไปอย่างมีศิลปะ แล้วทุกอย่างจะลงตัวเอง',
+   rev:'ชีวิตกำลังเอียงไปทางสุดโต่ง ขาดความพอดีบางอย่าง ถึงเวลาปรับจูนใหม่'},
+  {n:'XV',   en:'The Devil',           th:'เงามืด',          e:'⛓️',
+   up:'พันธนาการหรือความหลงใหลที่ควบคุมยาก รู้ทันสิ่งที่ผูกมัดเราไว้ คือก้าวแรกของอิสรภาพ',
+   rev:'โซ่ตรวนกำลังคลาย คุณกำลังหลุดพ้นจากวงจรเดิม อิสรภาพกำลังกลับคืนมา'},
+  {n:'XVI',  en:'The Tower',           th:'หอคอย',           e:'⚡',
+   up:'การเปลี่ยนแปลงฉับพลันที่เขย่าของเดิม ความจริงเผยออกมา — พังเพื่อสร้างใหม่ให้แข็งแรงกว่า',
+   rev:'เลี่ยงวิกฤตมาได้หวุดหวิด หรือกำลังยื้อสิ่งที่ควรปล่อย อย่ากลัวการรื้อเพื่อเริ่มใหม่'},
+  {n:'XVII', en:'The Star',            th:'ดวงดาว',          e:'🌠',
+   up:'ความหวังและการเยียวยา สิ่งที่ขอไว้กำลังเดินทางมา จงศรัทธาในเส้นทางของตัวเอง',
+   rev:'ความหวังริบหรี่ลงชั่วคราว อย่าเพิ่งหมดศรัทธา ดาวยังอยู่ที่เดิมแม้เมฆจะบัง'},
+  {n:'XVIII',en:'The Moon',            th:'ดวงจันทร์',       e:'🌕',
+   up:'ความไม่ชัดเจนและภาพลวง อย่าเพิ่งตัดสินใจเรื่องใหญ่ ให้สัญชาตญาณนำทางไปก่อน',
+   rev:'หมอกกำลังจางลง ความจริงเริ่มปรากฏ ความกังวลที่แบกไว้กำลังคลี่คลาย'},
+  {n:'XIX',  en:'The Sun',             th:'ดวงอาทิตย์',      e:'☀️',
+   up:'ความสำเร็จและความสุขสดใส พลังชีวิตเต็มเปี่ยม ข่าวดีกำลังส่องแสงเข้ามา',
+   rev:'แสงแดดถูกเมฆบังชั่วคราว อย่ามองข้ามสิ่งดีๆ ที่มีอยู่ตรงหน้า'},
+  {n:'XX',   en:'Judgement',           th:'เสียงปลุกตื่น',   e:'📯',
+   up:'เสียงเรียกครั้งสำคัญของชีวิต โอกาสฟื้นคืนและแก้ตัว ก้าวข้ามอดีตไปสู่เวอร์ชันที่ดีกว่า',
+   rev:'อย่าตัดสินตัวเองแรงเกินไป และอย่าเมินเสียงเรียกภายใน โอกาสรอให้ตอบรับอยู่'},
+  {n:'XXI',  en:'The World',           th:'โลกสมบูรณ์',      e:'🌍',
+   up:'ความสมบูรณ์ครบวงจร ภารกิจใหญ่กำลังปิดฉากอย่างสวยงาม พร้อมเฉลิมฉลองและเริ่มบทใหม่',
+   rev:'ใกล้เส้นชัยแล้วแต่ยังไม่จบ เก็บรายละเอียดที่ค้างให้ครบ แล้วความสำเร็จจะสมบูรณ์'},
 ];
+const cardImg = i => './cards/' + String(i).padStart(2,'0') + '.jpg';
+const loadImage = src => new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=src; });
 const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 
 /* ================= STATE ================= */
@@ -436,6 +496,7 @@ function choose(pickIdx){
   const reversed = Math.random() < 0.25;
   const question = $('q').value.trim().slice(0,120);
   current = { cardIndex, reversed, topic, question };
+  new Image().src = cardImg(cardIndex); // preload ภาพไพ่ระหว่างรอพลิก
 
   // อนิเมชั่น: ใบอื่นหายไป
   const cards = document.querySelectorAll('.fcard');
@@ -469,15 +530,15 @@ function choose(pickIdx){
 function renderCardFace(){
   const c = DECK[current.cardIndex];
   $('cardFront').innerHTML = `
-    <div class="tarot">
-      <div class="num">${c.n} · MAJOR ARCANA</div>
-      <div class="art ${current.reversed?'rev':''}">${c.e}</div>
-      <div>
-        <div class="nameth">${c.th}</div>
-        <div class="nameen">${c.en}</div>
-      </div>
+    <div class="tarot photo">
+      <img class="tarot-img ${current.reversed?'rev':''}" src="${cardImg(current.cardIndex)}" alt="${c.th} (${c.en})">
     </div>`;
-  $('revHolder').innerHTML = current.reversed ? '<span class="revbadge">ไพ่กลับหัว ↕</span>' : '';
+  $('revHolder').innerHTML = `
+    <div class="cardtitle">
+      <span class="ct-th">${c.th}</span>
+      <span class="ct-en">${c.n} · ${c.en}</span>
+      ${current.reversed ? '<br><span class="revbadge">ไพ่กลับหัว ↕</span>' : ''}
+    </div>`;
 }
 
 /* ================= API ================= */
@@ -524,6 +585,9 @@ function renderResult(data){
   $('resultArea').style.display='block';
   $('keyword').textContent = '“' + (data.keyword||'ดวงกำลังเดิน') + '”';
   $('reading').textContent = data.reading || '';
+  const card = DECK[current.cardIndex];
+  $('meaning').innerHTML = '<b>📖 ความหมายไพ่' + (current.reversed?' (กลับหัว)':'') + ':</b> '
+    + escapeHtml(current.reversed ? card.rev : card.up);
   $('advice').innerHTML = '<b>🪄 เคล็ดเสริมดวงวันนี้:</b> ' + escapeHtml(data.advice||'');
   const col = data.color || {name:'ทองอำพัน', hex:'#f0c96a'};
   $('swatch').style.background = col.hex || '#f0c96a';
@@ -595,46 +659,47 @@ async function shareCard(){
     x.font = "500 34px Sarabun, sans-serif";
     x.fillText('ไพ่ประจำวัน' + THAI_DAYS[new Date().getDay()] + ' · ' + (current.topic||'ดวงรวม'), W/2, 210);
 
-    // tarot card
-    const cw=470, ch=760, cx=(W-cw)/2, cy=270;
+    // tarot card — ภาพไพ่จริง (RWS) พร้อมกรอบทอง
+    const cw=440, ch=760, cx=(W-cw)/2, cy=240;
     rrect(x, cx-8, cy-8, cw+16, ch+16, 34); x.fillStyle='#c8973f'; x.fill();
-    rrect(x, cx, cy, cw, ch, 28);
-    const cg = x.createLinearGradient(0,cy,0,cy+ch);
-    cg.addColorStop(0,'#fdf8ea'); cg.addColorStop(1,'#efe3c2');
-    x.fillStyle = cg; x.fill();
-
-    x.fillStyle = '#8a6a2b';
-    x.font = "700 30px Sarabun, sans-serif";
-    x.fillText(c.n + ' · MAJOR ARCANA', W/2, cy+70);
-
-    // emoji art (หมุนถ้ากลับหัว)
+    rrect(x, cx-2, cy-2, cw+4, ch+4, 30); x.fillStyle='#fdf8ea'; x.fill();
+    let art = null;
+    try{ art = await loadImage(cardImg(current.cardIndex)); }catch(e){}
     x.save();
-    x.translate(W/2, cy+330);
+    rrect(x, cx, cy, cw, ch, 26); x.clip();
+    x.translate(cx+cw/2, cy+ch/2);
     if (current.reversed) x.rotate(Math.PI);
-    x.font = "240px 'Apple Color Emoji','Segoe UI Emoji',sans-serif";
-    x.textBaseline = 'middle';
-    x.fillText(c.e, 0, 0);
+    if (art){
+      const r = Math.max(cw/art.width, ch/art.height);
+      x.drawImage(art, -art.width*r/2, -art.height*r/2, art.width*r, art.height*r);
+    } else {
+      x.fillStyle = '#efe3c2'; x.fillRect(-cw/2,-ch/2,cw,ch);
+      x.font = "240px 'Apple Color Emoji','Segoe UI Emoji',sans-serif";
+      x.textBaseline = 'middle'; x.fillStyle = '#5a3c12';
+      x.fillText(c.e, 0, 0);
+    }
     x.restore();
     x.textBaseline = 'alphabetic';
 
-    x.fillStyle = '#5a3c12';
-    x.font = "700 66px Srisakdi, Sarabun, serif";
-    x.fillText(c.th, W/2, cy+ch-110);
-    x.fillStyle = '#8a6a2b';
-    x.font = "600 28px Sarabun, sans-serif";
-    x.fillText(c.en.toUpperCase() + (current.reversed?'  ·  กลับหัว':''), W/2, cy+ch-58);
+    // card name
+    x.fillStyle = '#f0c96a';
+    x.font = "700 62px Srisakdi, Sarabun, serif";
+    x.fillText(c.th + (current.reversed?' (กลับหัว)':''), W/2, cy+ch+80);
+    x.fillStyle = '#b9aed6';
+    x.font = "600 26px Sarabun, sans-serif";
+    x.fillText((c.n + ' · ' + c.en).toUpperCase(), W/2, cy+ch+124);
 
     // keyword
     x.fillStyle = '#f0c96a';
-    x.font = "700 78px Srisakdi, Sarabun, serif";
-    x.fillText('“' + ((result&&result.keyword)||'ดวงกำลังเดิน') + '”', W/2, cy+ch+130);
+    x.font = "700 74px Srisakdi, Sarabun, serif";
+    x.fillText('“' + ((result&&result.keyword)||'ดวงกำลังเดิน') + '”', W/2, cy+ch+218);
 
     // reading (wrap)
     x.fillStyle = '#f1eafe';
-    x.font = "400 40px Sarabun, sans-serif";
+    x.font = "400 38px Sarabun, sans-serif";
     const lines = wrapThai(x, (result&&result.reading)||'', 880, 4);
-    let ty = cy+ch+210;
-    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 62; });
+    let ty = cy+ch+288;
+    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 58; });
 
     // lucky row
     const ly = 1690;
