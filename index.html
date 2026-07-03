@@ -132,6 +132,23 @@ header{text-align:center;margin-bottom:8px}
 }
 #q:focus{border-color:var(--gold)}
 #q::placeholder{color:#7e6fa3}
+#dreamText{
+  width:100%;margin-top:6px;font-family:inherit;font-size:16px;color:var(--ink);
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:14px;min-height:96px;outline:none;resize:vertical;
+}
+#dreamText:focus{border-color:var(--gold)}
+#dreamText::placeholder{color:#7e6fa3}
+.bignum{
+  display:inline-block;background:rgba(240,201,106,.15);color:var(--gold);
+  border:1px solid var(--line);border-radius:14px;padding:10px 22px;
+  font-weight:700;font-size:30px;margin:8px 8px 0 0;letter-spacing:.12em;
+}
+.dreamart{
+  display:block;margin:16px auto 4px;width:150px;border-radius:12px;
+  border:2px solid var(--gold-2);box-shadow:0 12px 32px rgba(0,0,0,.5);
+}
+.dreamart.day{filter:none}
 .hint{font-size:12.5px;color:var(--dim);margin-top:8px}
 
 .btn{
@@ -305,6 +322,13 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
       <div class="hint">ตั้งจิตให้นิ่ง นึกถึงคำถาม แล้วกดจั่วไพ่</div>
       <button class="btn" id="btnDraw">จั่วไพ่วันนี้ ✦</button>
     </div>
+
+    <div class="ritual">
+      <div class="label">ทำนายฝัน · ตีเลขจากฝัน 💤</div>
+      <textarea id="dreamText" maxlength="300" placeholder="เมื่อคืนฝันว่า… (เช่น ฝันเห็นงูใหญ่สีทองรัดแขน)"></textarea>
+      <div class="hint">เล่าฝันสั้นๆ หมอมูตีความตามตำราไทย พร้อมเลขนำโชค 2 ตัว และ 3 ตัว (วันละ 1 ฝัน)</div>
+      <button class="btn" id="btnDream">ทำนายฝัน ✨</button>
+    </div>
   </section>
 
   <!-- ============ PICK ============ -->
@@ -356,6 +380,36 @@ footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-heigh
       <div id="errArea" style="display:none">
         <div class="err" id="errMsg"></div>
         <button class="btn ghost" id="btnRetry">เพ่งญาณอีกครั้ง</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DREAM RESULT ============ -->
+  <section class="screen" id="screen-dream">
+    <img class="dreamart" src="./cards/18.jpg" alt="The Moon — ดวงจันทร์">
+    <div class="ritual">
+      <div id="dreamLoading">
+        <div class="gaze">หมอมูกำลังเปิดตำราฝัน… 💤</div>
+        <div class="skel" style="width:92%"></div>
+        <div class="skel" style="width:100%"></div>
+        <div class="skel" style="width:78%"></div>
+      </div>
+      <div id="dreamResult" style="display:none">
+        <div class="keyword" id="dKeyword"></div>
+        <p class="reading" id="dMeaning"></p>
+        <div class="advice" id="dAdvice"></div>
+        <div style="text-align:center;margin-top:16px">
+          <div class="label" style="margin-bottom:2px">เลขเด็ดจากฝัน 🔢</div>
+          <div id="dNumbers"></div>
+        </div>
+        <button class="btn" id="btnDreamShare">แชร์เลขเด็ด 📤</button>
+        <button class="btn ghost" id="btnDreamBack">กลับหน้าหลัก</button>
+        <div class="lockchip" id="dreamLock">🌙 ฝันใหม่ทำนายได้พรุ่งนี้ · เพื่อความบันเทิงเท่านั้น</div>
+      </div>
+      <div id="dreamErr" style="display:none">
+        <div class="err" id="dreamErrMsg"></div>
+        <button class="btn ghost" id="btnDreamRetry">ลองอีกครั้ง</button>
+        <button class="btn ghost" id="btnDreamBack2">กลับหน้าหลัก</button>
       </div>
     </div>
   </section>
@@ -596,6 +650,8 @@ const THAI_DAYS = ['อาทิตย์','จันทร์','อังคา
 const LS_KEY = 'mm_daily';   // v2: {date, last, entries:{หัวข้อ:{current,result}}}
 const LS_STREAK = 'mm_streak';
 const LS_SHARE = 'mm_share'; // {date} — แชร์แล้ววันนี้ = ปลดล็อกหัวข้อเพิ่ม
+const LS_DREAM = 'mm_dream'; // {date, dream, result} — ทำนายฝันวันละครั้ง
+let dreamCur = null, dreamRes = null;
 let topic = 'ดวงรวม';
 let current = null;      // {cardIndex, reversed, topic, question}
 let result = null;       // AI result
@@ -626,6 +682,13 @@ function init(){
   $('btnFriendGo').addEventListener('click', friendCard);
 
   $('btnMore').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
+  $('btnDream').addEventListener('click', startDream);
+  $('btnDreamShare').addEventListener('click', shareDream);
+  $('btnDreamBack').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
+  $('btnDreamBack2').addEventListener('click', ()=>{ updateChips(); showScreen('screen-home'); });
+  $('btnDreamRetry').addEventListener('click', retryDream);
+  const dsaved = loadDreamSaved();
+  if (dsaved){ $('dreamText').value = dsaved.dream; $('btnDream').textContent = 'ดูคำทำนายฝันวันนี้ 💤'; }
   $('btnUnlockClose').addEventListener('click', ()=>$('unlockModal').classList.remove('on'));
   $('btnUnlockShare').addEventListener('click', async ()=>{
     $('unlockModal').classList.remove('on');
@@ -698,6 +761,167 @@ function updateChips(){
   document.querySelectorAll('#topics .chip').forEach(c=>{
     c.classList.toggle('done', !!day.entries[c.dataset.t]);
   });
+}
+
+/* ================= DREAM (ทำนายฝัน ตีเลข) ================= */
+function loadDreamSaved(){
+  try{
+    const j = JSON.parse(localStorage.getItem(LS_DREAM)||'null');
+    if (j && j.date === todayStr() && j.result) return j;
+  }catch(e){}
+  return null;
+}
+function saveDream(){
+  try{ localStorage.setItem(LS_DREAM, JSON.stringify({date: todayStr(), dream: dreamCur, result: dreamRes})); }catch(e){}
+}
+function startDream(){
+  const saved = loadDreamSaved();
+  if (saved){
+    dreamCur = saved.dream; dreamRes = saved.result;
+    showScreen('screen-dream');
+    $('dreamLoading').style.display='none'; $('dreamErr').style.display='none';
+    renderDream();
+    return;
+  }
+  const text = $('dreamText').value.trim().slice(0,300);
+  if (!text){ $('dreamText').focus(); return; }
+  dreamCur = text;
+  showScreen('screen-dream');
+  $('dreamLoading').style.display='block';
+  $('dreamResult').style.display='none';
+  $('dreamErr').style.display='none';
+  fetchDream(dreamCur).then(d=>{
+    dreamRes = d; saveDream();
+    $('btnDream').textContent = 'ดูคำทำนายฝันวันนี้ 💤';
+    renderDream();
+  }).catch(showDreamErr);
+}
+function retryDream(){
+  if (!dreamCur){ showScreen('screen-home'); return; }
+  $('dreamErr').style.display='none';
+  $('dreamLoading').style.display='block';
+  fetchDream(dreamCur).then(d=>{
+    dreamRes = d; saveDream(); renderDream();
+  }).catch(showDreamErr);
+}
+async function fetchDream(dream){
+  const res = await fetch(CONFIG.WORKER_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ mode:'dream', dream }),
+  });
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j.ok) throw (j.error || 'network');
+  return j.data;
+}
+function renderDream(){
+  const d = dreamRes || {};
+  $('dreamLoading').style.display='none';
+  $('dreamErr').style.display='none';
+  $('dreamResult').style.display='block';
+  $('dKeyword').textContent = '“' + (d.keyword||'ฝันบอกเหตุ') + '”';
+  $('dMeaning').textContent = d.meaning || '';
+  $('dAdvice').innerHTML = '<b>🪄 เคล็ดจากฝันนี้:</b> ' + escapeHtml(d.advice||'');
+  const nums = Array.isArray(d.numbers) ? d.numbers.slice(0,2) : [];
+  $('dNumbers').innerHTML = nums.map(n=>'<span class="bignum">'+escapeHtml(String(n))+'</span>').join('');
+}
+function showDreamErr(code){
+  $('dreamLoading').style.display='none';
+  $('dreamResult').style.display='none';
+  $('dreamErr').style.display='block';
+  const msgs = {
+    busy:  'คิวเข้าเฝ้าหมอมูแน่นมาก 🙏 รอสัก 1 นาทีแล้วลองใหม่',
+    quota: 'วันนี้ญาณหมอมูถูกใช้เยอะเป็นพิเศษ ✨ ลองใหม่อีกสักพัก',
+    nodream: 'เล่าฝันสั้นๆ ให้หมอมูฟังหน่อยนะ แล้วลองใหม่',
+  };
+  $('dreamErrMsg').textContent = msgs[code] || 'ญาณขัดข้องชั่วคราว 🌫️ เช็คเน็ตแล้วลองอีกครั้ง';
+}
+
+/* การ์ดแชร์เลขเด็ดจากฝัน */
+async function shareDream(){
+  const btn = $('btnDreamShare');
+  btn.disabled = true; btn.textContent = 'กำลังปั้นการ์ด…';
+  try{
+    try{ await document.fonts.load('700 70px Srisakdi'); await document.fonts.load('700 44px Sarabun'); await document.fonts.ready; }catch(e){}
+    const cv = $('cv'); const x = cv.getContext('2d');
+    const W=1080, H=1920;
+    const d = dreamRes || {};
+    const nums = Array.isArray(d.numbers) ? d.numbers.slice(0,2) : [];
+
+    const g = x.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1458'); g.addColorStop(.55,'#140a30'); g.addColorStop(1,'#0b0620');
+    x.fillStyle = g; x.fillRect(0,0,W,H);
+    for(let i=0;i<130;i++){
+      x.globalAlpha = Math.random()*0.7+0.15; x.fillStyle = '#fff';
+      x.beginPath(); x.arc(Math.random()*W, Math.random()*H, Math.random()*2.2+0.6, 0, 7); x.fill();
+    }
+    x.globalAlpha = 1;
+
+    x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.fillStyle = '#f0c96a';
+    x.font = "700 64px Srisakdi, Sarabun, serif";
+    x.fillText(CONFIG.APP_NAME + ' 🔮', W/2, 150);
+    x.fillStyle = '#b9aed6';
+    x.font = "500 34px Sarabun, sans-serif";
+    x.fillText('ทำนายฝัน · เลขเด็ดจากฝันคืนนี้ 💤', W/2, 210);
+
+    // การ์ดดวงจันทร์ (The Moon)
+    const cw=340, ch=590, cx=(W-cw)/2, cy=250;
+    rrect(x, cx-8, cy-8, cw+16, ch+16, 30); x.fillStyle='#c8973f'; x.fill();
+    rrect(x, cx-2, cy-2, cw+4, ch+4, 26); x.fillStyle='#fdf8ea'; x.fill();
+    let art = null;
+    try{ art = await loadImage(cardImg(18)); }catch(e){}
+    x.save();
+    rrect(x, cx, cy, cw, ch, 22); x.clip();
+    if (art){
+      const r = Math.max(cw/art.width, ch/art.height);
+      x.drawImage(art, cx+cw/2-art.width*r/2, cy+ch/2-art.height*r/2, art.width*r, art.height*r);
+    } else { x.fillStyle='#efe3c2'; x.fillRect(cx,cy,cw,ch); }
+    x.restore();
+
+    // keyword + คำทำนาย
+    x.fillStyle = '#f0c96a';
+    x.font = "700 70px Srisakdi, Sarabun, serif";
+    x.fillText('“' + (d.keyword||'ฝันบอกเหตุ') + '”', W/2, cy+ch+105);
+    x.fillStyle = '#f1eafe';
+    x.font = "400 38px Sarabun, sans-serif";
+    const lines = wrapThai(x, d.meaning||'', 880, 4);
+    let ty = cy+ch+175;
+    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 58; });
+
+    // เลขเด็ดตัวใหญ่
+    x.fillStyle = '#b9aed6';
+    x.font = "600 34px Sarabun, sans-serif";
+    x.fillText('เลขเด็ดจากฝัน', W/2, 1560);
+    const bw = 200, bh = 130, gap = 40;
+    const totalW = nums.length*bw + (nums.length-1)*gap;
+    let bx = (W-totalW)/2;
+    nums.forEach(n=>{
+      rrect(x, bx, 1590, bw, bh, 22);
+      x.fillStyle = 'rgba(240,201,106,.14)'; x.fill();
+      x.lineWidth = 3; x.strokeStyle = '#c8973f'; x.stroke();
+      x.fillStyle = '#f0c96a';
+      x.font = "700 76px Sarabun, sans-serif";
+      x.fillText(String(n), bx+bw/2, 1590+bh-38);
+      bx += bw + gap;
+    });
+
+    x.fillStyle = '#8f82b8';
+    x.font = "500 32px Sarabun, sans-serif";
+    x.fillText('ทำนายฝันของคุณฟรีที่ ' + CONFIG.APP_URL + ' ✨', W/2, 1840);
+
+    const blob = await new Promise(r=>cv.toBlob(r,'image/png'));
+    const file = new File([blob], 'mormoo-dream.png', {type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'เลขเด็ดจากฝัน 🔮'});
+      markShared();
+    } else {
+      $('shareImg').src = URL.createObjectURL(blob);
+      $('shareModal').classList.add('on');
+      markShared();
+    }
+  }catch(e){ /* ยกเลิก share ก็เงียบไว้ */ }
+  btn.disabled = false; btn.textContent = 'แชร์เลขเด็ด 📤';
 }
 
 function buildFan(){
